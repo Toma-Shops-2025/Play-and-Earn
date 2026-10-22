@@ -14,6 +14,6 @@ export function getSupabaseConfig() {
   return { url, anonKey };
 }
 
-export function isStripeConfigured(): boolean {
-  return Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+export function isPayPalConfigured(): boolean {
+  return Boolean(process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID);
 }

@@ -1,6 +1,6 @@
 # Monetization & profitability
 
-This app makes money from **ads** (Unity LevelPlay) and optional **coin packs** (Stripe web / Play Billing on Android). You lose money if **real cash payouts** or **over-generous free coins** exceed that revenue.
+This app makes money from **ads** (Unity LevelPlay) and optional **coin packs** (PayPal web / Play Billing on Android). You lose money if **real cash payouts** or **over-generous free coins** exceed that revenue.
 
 All tunables live in **`src/lib/economy-config.ts`**.
 
@@ -43,7 +43,7 @@ Update `planningRewardedEcpmUsd` monthly from **LevelPlay → Reports**.
 2. **Interstitials** — shown every `gamesBetweenInterstitials` mini-game opens (default **3**). Tune in `economy-config.ts`.
 3. **Daily streak** — requires one **rewarded** video before claim when `dailyStreakRequiresRewardedAd` is true.
 4. **Sell coin packs** on Android via **Google Play Billing** (required for in-app digital goods).
-5. **Keep Stripe** for web-only packs if you host a web version.
+5. **PayPal** for web / browser coin packs (already integrated); Play Billing on Android when required.
 6. **Do not enable real payouts** until:  
    `monthly_ad_revenue + iap_revenue > payouts + store_fees + infra + 30% buffer`
 
@@ -53,7 +53,7 @@ Only after:
 
 - 30+ days of LevelPlay data for your GEO mix  
 - Legal/tax review for reward apps in target countries  
-- Stripe Connect or PayPal Payouts with **manual approval** on `pending` withdrawals  
+- PayPal Payouts with **manual approval** on `pending` withdrawals when you enable real cash  
 - Set `realMoneyPayoutsEnabled: true` in `economy-config.ts` and update store copy honestly  
 
 ## Red flags (you will lose money)

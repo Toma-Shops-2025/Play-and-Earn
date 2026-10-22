@@ -1,77 +1,69 @@
 # Backend, auth & payments setup
 
-Recommended order (what this repo implements):
+Recommended order:
 
 1. **Supabase** — database + auth (source of truth for balances when signed in)
-2. **Stripe** — coin pack purchases (web checkout; see Play Billing note below)
-3. **Manual / Connect payouts** — withdrawal rows are created in the DB; you fulfill via PayPal Payouts or Stripe Connect in a later ops step
+2. **PayPal** — coin pack purchases (web / mobile browser)
+3. **Withdrawals** — virtual ledger in-app; real PayPal **Payouts** only when you enable ops (see MONETIZATION.md)
 
 ## 1. Supabase project
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor** → paste and run `supabase/migrations/20260322000000_init.sql`.
-3. Under **Authentication → Providers**, enable **Email** (password).
-4. Copy **Project URL** and **anon public** key into `.env.local`:
+2. Run all SQL files in `supabase/migrations/` in order in the SQL editor.
+3. Enable **Email** auth under Authentication → Providers.
+4. Add to `.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=your-sandbox-client-id
 ```
 
-5. Restart the dev server / rebuild the mobile bundle.
+## 2. PayPal coin packs
 
-When signed in, the app calls RPCs (`get_wallet`, `grant_game_coins`, etc.) so clients cannot forge balances.
-
-## 2. Stripe coin packs (web)
-
-1. Create a [Stripe](https://stripe.com) account and get test keys.
-2. Deploy edge functions (Supabase CLI):
+1. Create apps at [PayPal Developer](https://developer.paypal.com/dashboard/) (Sandbox for testing).
+2. Copy **Client ID** → `NEXT_PUBLIC_PAYPAL_CLIENT_ID` (app) and `PAYPAL_CLIENT_ID` (edge secrets).
+3. Copy **Secret** → Supabase secret `PAYPAL_CLIENT_SECRET` only.
+4. Deploy edge functions:
 
 ```bash
 npm install -g supabase
 supabase login
 supabase link --project-ref YOUR_REF
-supabase secrets set STRIPE_SECRET_KEY=sk_test_... STRIPE_WEBHOOK_SECRET=whsec_...
-supabase functions deploy create-checkout
-supabase functions deploy stripe-webhook --no-verify-jwt
+supabase secrets set \
+  PAYPAL_CLIENT_ID=your_client_id \
+  PAYPAL_CLIENT_SECRET=your_secret \
+  PAYPAL_MODE=sandbox
+supabase functions deploy create-paypal-order
+supabase functions deploy complete-paypal-order
+supabase functions deploy paypal-webhook --no-verify-jwt
 ```
 
-3. In Stripe Dashboard → **Developers → Webhooks**, add endpoint:
+5. Optional webhook in PayPal Dashboard → your app → Webhooks:
 
-`https://YOUR_REF.supabase.co/functions/v1/stripe-webhook`
+`https://YOUR_REF.supabase.co/functions/v1/paypal-webhook`
 
-Events: `checkout.session.completed`
+Events: `PAYMENT.CAPTURE.COMPLETED`, `CHECKOUT.ORDER.COMPLETED`
 
-4. Add to `.env.local`:
+6. Sign in → **Profile → Buy coin packs** → approve in PayPal → return URL credits coins.
 
-```env
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-```
+### Return URL
 
-5. Sign in → **Profile → Buy coin packs**.
+PayPal redirects to `/?paypal=success&token=ORDER_ID`. The app calls `complete-paypal-order` to capture and credit coins (idempotent).
 
 ### Google Play note
 
-Selling **digital coins inside the Android app** must use **Google Play Billing**, not Stripe in a WebView. Use Stripe for **web** users or a **mobile browser** flow only until Play Billing is integrated. Misusing external checkout in-app is a common Play rejection.
+Digital coin sales **inside** the Android app must use **Google Play Billing**, not PayPal in a WebView. Use PayPal on web or external browser until Play Billing is added.
 
 ## 3. Withdrawals (real money)
 
-`request_withdrawal` creates a `pending` row and zeros the user’s **virtual** cash balance in the database. It does **not** automatically send money.
-
-To pay users for real:
-
-- Complete KYC / legal review for your regions
-- Integrate **Stripe Connect Express** or **PayPal Payouts**
-- Add an admin job or edge function that moves `pending` → `processing` → `completed` with audit logs
-
-Until then, treat cash balances as **loyalty points** in copy and Play Console declarations.
+`request_withdrawal` creates a `pending` row. For real cash, use [PayPal Payouts](https://developer.paypal.com/docs/payouts/) or manual processing — not automated in this repo.
 
 ## 4. Environment reference
 
-See `.env.example` for all variables.
+See `.env.example`.
 
-## 5. Security checklist
+## 5. Security
 
-- Never put `SUPABASE_SERVICE_ROLE_KEY` or `STRIPE_SECRET_KEY` in the mobile app
-- Rotate keys if leaked
-- Re-run Data safety in Play Console when you collect email / payment info
+- Never put `PAYPAL_CLIENT_SECRET` or `SUPABASE_SERVICE_ROLE_KEY` in the client app.
+- Use `PAYPAL_MODE=live` only in production secrets.

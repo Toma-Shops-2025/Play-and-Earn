@@ -18,7 +18,7 @@ export function AuthPanel() {
         <p className="font-semibold text-slate-800">Cloud account (optional)</p>
         <p className="mt-1">
           Add Supabase keys in <code className="text-xs">.env.local</code> to enable
-          sign-in, synced balances, and Stripe coin packs. Without it, progress stays on
+          sign-in, synced balances, and PayPal coin packs. Without it, progress stays on
           this device only.
         </p>
       </section>

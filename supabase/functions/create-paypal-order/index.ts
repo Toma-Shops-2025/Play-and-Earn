@@ -1,14 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
-
-const PACKS: Record<
-  string,
-  { coins: number; name: string; unitAmount: number }
-> = {
-  coins_100: { coins: 100, name: "Starter coin pack", unitAmount: 99 },
-  coins_500: { coins: 500, name: "Pro coin pack", unitAmount: 399 },
-  coins_1200: { coins: 1200, name: "Mega coin pack", unitAmount: 799 },
-};
+import {
+  PAYPAL_PACKS,
+  getPayPalAccessToken,
+  paypalApiBase,
+} from "../_shared/paypal.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,11 +17,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnon = Deno.env.get("SUPABASE_ANON_KEY");
-    if (!stripeKey || !supabaseUrl || !supabaseAnon) {
-      throw new Error("Missing Stripe or Supabase env configuration.");
+    if (!supabaseUrl || !supabaseAnon) {
+      throw new Error("Missing Supabase configuration");
     }
 
     const authHeader = req.headers.get("Authorization");
@@ -49,7 +43,7 @@ Deno.serve(async (req) => {
     }
 
     const { packId } = await req.json();
-    const pack = PACKS[packId as string];
+    const pack = PAYPAL_PACKS[packId as string];
     if (!pack) {
       return new Response(JSON.stringify({ error: "Invalid pack" }), {
         status: 400,
@@ -57,36 +51,57 @@ Deno.serve(async (req) => {
       });
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2024-12-18.acacia" });
     const origin = req.headers.get("origin") ?? "http://localhost:43123";
+    const token = await getPayPalAccessToken();
+    const customId = `${userData.user.id}|${packId}|${pack.coins}`;
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      success_url: `${origin}/?checkout=success`,
-      cancel_url: `${origin}/?checkout=cancel`,
-      client_reference_id: userData.user.id,
-      metadata: {
-        user_id: userData.user.id,
-        pack_id: packId,
-        coins: String(pack.coins),
+    const orderRes = await fetch(`${paypalApiBase()}/v2/checkout/orders`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: "usd",
-            unit_amount: pack.unitAmount,
-            product_data: { name: pack.name },
+      body: JSON.stringify({
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            custom_id: customId,
+            description: pack.name,
+            amount: {
+              currency_code: "USD",
+              value: pack.priceUsd,
+            },
           },
+        ],
+        application_context: {
+          brand_name: "Play Earn Arcade",
+          user_action: "PAY_NOW",
+          return_url: `${origin}/?paypal=success`,
+          cancel_url: `${origin}/?paypal=cancel`,
         },
-      ],
+      }),
     });
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    if (!orderRes.ok) {
+      const errText = await orderRes.text();
+      throw new Error(`PayPal order failed: ${errText}`);
+    }
+
+    const order = await orderRes.json();
+    const approveUrl = (order.links as Array<{ rel: string; href: string }>).find(
+      (l) => l.rel === "approve",
+    )?.href;
+
+    if (!approveUrl) {
+      throw new Error("PayPal approve URL missing");
+    }
+
+    return new Response(
+      JSON.stringify({ url: approveUrl, orderId: order.id }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Checkout error";
+    const message = error instanceof Error ? error.message : "PayPal order error";
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

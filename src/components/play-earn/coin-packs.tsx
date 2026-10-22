@@ -3,24 +3,21 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-provider";
-import {
-  COIN_PACKS,
-  startCoinPackCheckout,
-  type CoinPackId,
-} from "@/lib/wallet-api";
-import { isStripeConfigured } from "@/lib/supabase/env";
+import { type CoinPackId, COIN_PACKS } from "@/lib/wallet-api";
+import { startPayPalCoinPackCheckout } from "@/lib/paypal-checkout";
+import { isPayPalConfigured } from "@/lib/supabase/env";
 
 export function CoinPacks() {
   const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<CoinPackId | null>(null);
 
-  if (!isStripeConfigured()) {
+  if (!isPayPalConfigured()) {
     return (
       <section className="rounded-2xl border border-dashed border-violet-200 bg-violet-50 p-4 text-xs text-violet-900">
-        Stripe publishable key not set. Add{" "}
-        <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> and deploy the Supabase{" "}
-        <code>create-checkout</code> function to sell coin packs on the web.
+        PayPal client ID not set. Add <code>NEXT_PUBLIC_PAYPAL_CLIENT_ID</code> and deploy
+        Supabase functions <code>create-paypal-order</code> /{" "}
+        <code>complete-paypal-order</code> (see BACKEND_SETUP.md).
       </section>
     );
   }
@@ -33,7 +30,7 @@ export function CoinPacks() {
     setBusy(packId);
     setError(null);
     try {
-      const url = await startCoinPackCheckout(packId);
+      const { url } = await startPayPalCoinPackCheckout(packId);
       const { Capacitor } = await import("@capacitor/core");
       if (Capacitor.isNativePlatform()) {
         const { Browser } = await import("@capacitor/browser");
@@ -42,7 +39,7 @@ export function CoinPacks() {
         window.location.href = url;
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Checkout failed.");
+      setError(e instanceof Error ? e.message : "PayPal checkout failed.");
     } finally {
       setBusy(null);
     }
@@ -52,8 +49,8 @@ export function CoinPacks() {
     <section className="rounded-2xl bg-white p-4 shadow-sm">
       <h3 className="font-semibold text-slate-800">Buy coin packs</h3>
       <p className="mt-1 text-xs text-slate-500">
-        Web checkout via Stripe. On Google Play, use Play Billing for in-app purchases
-        (required by store policy).
+        Checkout with PayPal. On Google Play, use Play Billing for in-app purchases (store
+        policy).
       </p>
       <div className="mt-3 space-y-2">
         {(Object.keys(COIN_PACKS) as CoinPackId[]).map((id) => {

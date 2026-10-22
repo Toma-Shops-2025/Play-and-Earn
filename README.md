@@ -19,9 +19,9 @@ Open [http://localhost:43123](http://localhost:43123).
 
 Economy defaults and unit economics: **[MONETIZATION.md](./MONETIZATION.md)** — tune **`src/lib/economy-config.ts`**.
 
-## Backend, auth & Stripe
+## Backend, auth & PayPal
 
-Optional cloud accounts and payments: **[BACKEND_SETUP.md](./BACKEND_SETUP.md)**.
+Optional cloud accounts and PayPal coin packs: **[BACKEND_SETUP.md](./BACKEND_SETUP.md)**.
 
 Without `.env.local`, the app keeps using **on-device-only** demo mode.
 

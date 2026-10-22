@@ -147,16 +147,5 @@ export const COIN_PACKS: Record<
   coins_1200: { label: "Mega pack", coins: 1200, priceLabel: "$7.99" },
 };
 
-export async function startCoinPackCheckout(packId: CoinPackId): Promise<string> {
-  const supabase = getSupabase();
-  if (!supabase) {
-    throw new Error("Sign in and configure Supabase to purchase coin packs.");
-  }
-  const { data, error } = await supabase.functions.invoke("create-checkout", {
-    body: { packId },
-  });
-  if (error) throw error;
-  const url = (data as { url?: string })?.url;
-  if (!url) throw new Error("Checkout session missing URL.");
-  return url;
-}
+/** @deprecated Use startPayPalCoinPackCheckout from @/lib/paypal-checkout */
+export { startPayPalCoinPackCheckout as startCoinPackCheckout } from "@/lib/paypal-checkout";

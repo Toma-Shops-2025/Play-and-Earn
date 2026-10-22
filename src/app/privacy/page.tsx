@@ -30,9 +30,9 @@ export default function PrivacyPage() {
         in the cloud.
       </p>
       <p className="mt-2">
-        <strong>Payments:</strong> If you buy coin packs on the web, Stripe processes payment
-        card data according to Stripe&apos;s privacy policy. We receive purchase metadata (pack
-        size, amount, user id) to credit virtual coins.
+        <strong>Payments:</strong> If you buy coin packs, PayPal processes payment according to
+        PayPal&apos;s privacy policy. We receive purchase metadata (pack size, amount, user id)
+        to credit virtual coins.
       </p>
       <p className="mt-2">
         <strong>Support:</strong> If you email support, we receive what you choose to send.

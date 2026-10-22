@@ -9,6 +9,7 @@ import { RewardsView } from "@/components/play-earn/views/rewards-view";
 import { GamesView } from "@/components/play-earn/views/games-view";
 import { CustomView } from "@/components/play-earn/views/custom-view";
 import { WatchAdView } from "@/components/play-earn/views/watch-ad-view";
+import { PayPalReturnHandler } from "@/components/play-earn/paypal-return";
 import { ComplianceOnboarding } from "@/components/play-earn/compliance-onboarding";
 import { getOnboarding } from "@/lib/compliance";
 import { APP_CONFIG } from "@/lib/app-config";
@@ -27,6 +28,7 @@ function PlayEarnShell() {
   return (
     <div className="min-h-full bg-gradient-to-b from-sky-100 via-slate-50 to-slate-100 pt-[env(safe-area-inset-top)]">
       <div className="mx-auto min-h-full max-w-md px-3 pb-24 pt-4">
+        <PayPalReturnHandler />
         <header className="mb-4 text-center">
           <h1 className="text-lg font-extrabold tracking-tight text-slate-900">
             {APP_CONFIG.name}

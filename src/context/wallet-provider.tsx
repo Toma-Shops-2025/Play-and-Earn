@@ -12,8 +12,11 @@ import {
 import { useAuth } from "@/context/auth-provider";
 import type { GameId } from "@/lib/games";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { REWARDED_AD_CONFIG } from "@/lib/ads-config";
+import { getLocalAdStats, grantLocalAdReward } from "@/lib/ad-rewards-local";
 import {
   cloudClaimDailyReward,
+  cloudGrantAdReward,
   cloudGrantGameCoins,
   cloudRequestWithdrawal,
   fetchCloudWallet,
@@ -23,7 +26,7 @@ const CONVERSION_INTERVAL_SECONDS = 3 * 60 * 60;
 const COINS_PER_CENT = 10;
 const STORAGE_KEY = "play-earn-wallet-v1";
 
-export type TabId = "payouts" | "rewards" | "games" | "custom";
+export type TabId = "payouts" | "rewards" | "watchAd" | "games" | "custom";
 
 export type Withdrawal = {
   id: string;
@@ -43,9 +46,12 @@ type WalletState = {
 
 type WalletContextValue = WalletState & {
   mode: "local" | "cloud";
+  adsWatchedToday: number;
+  adsRemainingToday: number;
   activeTab: TabId;
   setActiveTab: (tab: TabId) => void;
   addCoins: (gameId: GameId, amount: number) => Promise<void>;
+  grantAdReward: () => Promise<{ ok: boolean; message: string }>;
   cashout: () => Promise<{ ok: boolean; message: string }>;
   claimDailyReward: (dayIndex: number, coins: number) => Promise<boolean>;
   conversionProgress: number;
@@ -80,6 +86,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const mode: "local" | "cloud" = cloudActive ? "cloud" : "local";
 
   const [state, setState] = useState<WalletState>(defaultState);
+  const [adStats, setAdStats] = useState<{
+    adsWatchedToday: number;
+    adsRemainingToday: number;
+  }>({
+    adsWatchedToday: 0,
+    adsRemainingToday: REWARDED_AD_CONFIG.dailyLimit,
+  });
   const [activeTab, setActiveTab] = useState<TabId>("payouts");
   const [hydrated, setHydrated] = useState(false);
 
@@ -95,6 +108,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       withdrawals: cloud.withdrawals,
       claimedRewardDays: cloud.claimedRewardDays,
     });
+    setAdStats({
+      adsWatchedToday: cloud.adsWatchedToday,
+      adsRemainingToday: cloud.adsRemainingToday,
+    });
   }, [cloudActive]);
 
   useEffect(() => {
@@ -102,6 +119,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       void refreshWallet();
     } else {
       setState(loadLocalState());
+      setAdStats(getLocalAdStats());
     }
     setHydrated(true);
   }, [cloudActive, refreshWallet]);
@@ -150,6 +168,23 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }, 1000);
     return () => window.clearInterval(id);
   }, [hydrated, cloudActive]);
+
+  const grantAdReward = useCallback(async () => {
+    if (cloudActive) {
+      const result = await cloudGrantAdReward();
+      await refreshWallet();
+      return { ok: result.ok, message: result.message };
+    }
+    const result = grantLocalAdReward();
+    if (result.ok) {
+      setState((prev) => ({
+        ...prev,
+        coins: prev.coins + result.coinsGranted,
+      }));
+      setAdStats(getLocalAdStats());
+    }
+    return { ok: result.ok, message: result.message };
+  }, [cloudActive, refreshWallet]);
 
   const addCoins = useCallback(
     async (gameId: GameId, amount: number) => {
@@ -222,10 +257,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       ...state,
+      ...adStats,
       mode,
       activeTab,
       setActiveTab,
       addCoins,
+      grantAdReward,
       cashout,
       claimDailyReward,
       conversionProgress,
@@ -233,9 +270,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }),
     [
       state,
+      adStats,
       mode,
       activeTab,
       addCoins,
+      grantAdReward,
       cashout,
       claimDailyReward,
       conversionProgress,

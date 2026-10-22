@@ -8,6 +8,7 @@ import { PayoutsView } from "@/components/play-earn/views/payouts-view";
 import { RewardsView } from "@/components/play-earn/views/rewards-view";
 import { GamesView } from "@/components/play-earn/views/games-view";
 import { CustomView } from "@/components/play-earn/views/custom-view";
+import { WatchAdView } from "@/components/play-earn/views/watch-ad-view";
 import { ComplianceOnboarding } from "@/components/play-earn/compliance-onboarding";
 import { getOnboarding } from "@/lib/compliance";
 import { APP_CONFIG } from "@/lib/app-config";
@@ -37,6 +38,7 @@ function PlayEarnShell() {
 
         {activeTab === "payouts" ? <PayoutsView /> : null}
         {activeTab === "rewards" ? <RewardsView /> : null}
+        {activeTab === "watchAd" ? <WatchAdView /> : null}
         {activeTab === "games" ? <GamesView /> : null}
         {activeTab === "custom" ? <CustomView /> : null}
       </div>

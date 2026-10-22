@@ -11,6 +11,10 @@ npm run dev -- --port 43123
 
 Open [http://localhost:43123](http://localhost:43123).
 
+## Unity rewarded ads
+
+**Watch Ad** tab + LevelPlay on Android: **[UNITY_ADS.md](./UNITY_ADS.md)** (default **15 coins** / ad, **12** per day).
+
 ## Backend, auth & Stripe
 
 Optional cloud accounts and payments: **[BACKEND_SETUP.md](./BACKEND_SETUP.md)**.

@@ -32,6 +32,11 @@ repositories {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "com.unity3d.ads-mediation:mediation-sdk:9.5.0"
+    implementation "com.unity3d.ads-mediation:unityads-adapter:4.3.47"
+    implementation "com.google.android.gms:play-services-appset:16.1.0"
+    implementation "com.google.android.gms:play-services-ads-identifier:18.2.0"
+    implementation "com.google.android.gms:play-services-basement:18.5.0"
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"

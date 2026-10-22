@@ -1,4 +1,5 @@
 import type { GameId } from "@/lib/games";
+import { REWARDED_AD_CONFIG } from "@/lib/ads-config";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Withdrawal } from "@/context/wallet-provider";
 
@@ -9,6 +10,16 @@ export type CloudWalletPayload = {
   secondsUntilConversion: number;
   claimedRewardDays: number[];
   withdrawals: Withdrawal[];
+  adsWatchedToday: number;
+  adsRemainingToday: number;
+};
+
+export type AdRewardResult = {
+  ok: boolean;
+  message: string;
+  coinsGranted: number;
+  adsWatchedToday: number;
+  adsRemainingToday: number;
 };
 
 export async function fetchCloudWallet(): Promise<CloudWalletPayload | null> {
@@ -32,6 +43,12 @@ export async function fetchCloudWallet(): Promise<CloudWalletPayload | null> {
     }>;
   };
 
+  const adsWatchedToday = Number((raw as { adsWatchedToday?: number }).adsWatchedToday ?? 0);
+  const adsRemainingToday = Number(
+    (raw as { adsRemainingToday?: number }).adsRemainingToday ??
+      REWARDED_AD_CONFIG.dailyLimit,
+  );
+
   return {
     uid: raw.uid,
     coins: raw.coins,
@@ -44,6 +61,34 @@ export async function fetchCloudWallet(): Promise<CloudWalletPayload | null> {
       status: w.status,
       createdAt: w.createdAt,
     })),
+    adsWatchedToday,
+    adsRemainingToday,
+  };
+}
+
+export async function cloudGrantAdReward(): Promise<AdRewardResult> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    throw new Error("Sign in to claim ad rewards in the cloud.");
+  }
+  const { data, error } = await supabase.rpc("grant_ad_reward", {
+    p_coins: REWARDED_AD_CONFIG.coinsPerAd,
+    p_daily_limit: REWARDED_AD_CONFIG.dailyLimit,
+  });
+  if (error) throw error;
+  const result = data as {
+    ok: boolean;
+    message: string;
+    coinsGranted: number;
+    adsWatchedToday: number;
+    adsRemainingToday: number;
+  };
+  return {
+    ok: result.ok,
+    message: result.message,
+    coinsGranted: Number(result.coinsGranted ?? 0),
+    adsWatchedToday: Number(result.adsWatchedToday ?? 0),
+    adsRemainingToday: Number(result.adsRemainingToday ?? 0),
   };
 }
 

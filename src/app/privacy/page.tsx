@@ -38,10 +38,17 @@ export default function PrivacyPage() {
         <strong>Support:</strong> If you email support, we receive what you choose to send.
       </p>
 
+      <h2 className="mt-6 text-base font-bold">Advertising</h2>
+      <p className="mt-2">
+        The Android app may show rewarded video ads through Unity LevelPlay. Ad partners may
+        process advertising identifiers according to their policies. We do not receive your
+        payment card data from ad views.
+      </p>
+
       <h2 className="mt-6 text-base font-bold">Information we do not collect</h2>
       <p className="mt-2">
-        The app does not transmit gameplay balances to our servers. We do not use advertising
-        SDKs, analytics SDKs, or payment SDKs in this version.
+        Without a cloud account, gameplay balances are not transmitted to our servers. We do
+        not use third-party analytics SDKs in this project.
       </p>
 
       <h2 className="mt-6 text-base font-bold">Children</h2>

@@ -17,7 +17,7 @@ Use this after you build a signed **Android App Bundle (`.aab`)** from this repo
 - **Default language:** English (United States)
 - **App or game:** Game
 - **Free or paid:** Free
-- **Declarations:** No ads in this build (unless you add ad SDKs later)
+- **Declarations:** **Contains ads** (Unity LevelPlay rewarded videos)
 
 ## 3. Store listing
 

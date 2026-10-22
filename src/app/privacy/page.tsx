@@ -20,15 +20,22 @@ export default function PrivacyPage() {
 
       <h2 className="mt-6 text-base font-bold">Information we process</h2>
       <p className="mt-2">
-        <strong>On-device app data:</strong> Virtual coin balance, simulated cash balance,
-        mini-game progress, daily reward check-ins, customization choices, and compliance
-        acknowledgements are saved in your device storage (for example, browser or WebView
-        local storage). This data stays on your device unless you clear app storage or
-        uninstall the app.
+        <strong>Account (optional):</strong> If you create an account, we process your email
+        address and authentication tokens through our database provider (Supabase) to sync
+        your virtual balances and purchase history.
       </p>
       <p className="mt-2">
-        <strong>Diagnostics:</strong> If you email support, we receive the information you
-        choose to send (such as your email address and message content).
+        <strong>On-device app data:</strong> When you are not signed in, virtual balances and
+        progress may be stored only on your device. Signed-in users also store gameplay state
+        in the cloud.
+      </p>
+      <p className="mt-2">
+        <strong>Payments:</strong> If you buy coin packs on the web, Stripe processes payment
+        card data according to Stripe&apos;s privacy policy. We receive purchase metadata (pack
+        size, amount, user id) to credit virtual coins.
+      </p>
+      <p className="mt-2">
+        <strong>Support:</strong> If you email support, we receive what you choose to send.
       </p>
 
       <h2 className="mt-6 text-base font-bold">Information we do not collect</h2>

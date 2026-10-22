@@ -6,11 +6,11 @@ import { formatCash } from "@/lib/format";
 import { useWallet } from "@/context/wallet-provider";
 
 export function WalletCard() {
-  const { uid, cashBalance, cashout } = useWallet();
+  const { uid, cashBalance, cashout, mode } = useWallet();
   const [message, setMessage] = useState<string | null>(null);
 
-  function handleCashout() {
-    const result = cashout();
+  async function handleCashout() {
+    const result = await cashout();
     setMessage(result.message);
     window.setTimeout(() => setMessage(null), 4000);
   }
@@ -45,7 +45,7 @@ export function WalletCard() {
         onClick={handleCashout}
         className="mt-5 h-12 w-full rounded-2xl bg-lime-500 text-base font-bold text-slate-900 hover:bg-lime-400"
       >
-        Demo cashout
+        {mode === "cloud" ? "Request withdrawal" : "Demo cashout"}
       </Button>
 
       {message ? (

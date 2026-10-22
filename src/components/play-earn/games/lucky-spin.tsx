@@ -25,7 +25,7 @@ export function LuckySpin({ onClose }: { onClose: () => void }) {
 
     setRotation((prev) => prev + target);
     window.setTimeout(() => {
-      addCoins(prize);
+      void addCoins("spin", prize);
       setResult(`You won ${prize} coins!`);
       setSpinning(false);
     }, 2200);

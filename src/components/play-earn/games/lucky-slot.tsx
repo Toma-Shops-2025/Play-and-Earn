@@ -36,7 +36,7 @@ export function LuckySlot({ onClose }: { onClose: () => void }) {
         const allMatch = final.every((s) => s === final[0]);
         const twoMatch = final[0] === final[1] || final[1] === final[2];
         const prize = allMatch ? 8 : twoMatch ? 3 : randomInt(0, 1);
-        if (prize > 0) addCoins(prize);
+        if (prize > 0) void addCoins("slot", prize);
         setMessage(
           prize > 0 ? `You won ${prize} coins!` : "No luck this time — try again!",
         );

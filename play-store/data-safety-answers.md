@@ -6,7 +6,7 @@ Use these when filling **Play Console → App content → Data safety** for the 
 
 | Question | Answer |
 |----------|--------|
-| Does your app collect or share any of the required user data types? | **No** (developer collection/sharing) |
+| Does your app collect or share any of the required user data types? | **Yes** when cloud auth is enabled — email for account; purchase metadata via Stripe on web |
 | Is all of the user data collected by your app encrypted in transit? | N/A — no developer server transmission |
 | Do you provide a way for users to request that their data is deleted? | **Yes** — in-app **Profile → Delete all data on device**; also uninstall / clear storage |
 

@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { AuthPanel } from "@/components/auth/auth-panel";
+import { CoinPacks } from "@/components/play-earn/coin-packs";
 import { APP_CONFIG } from "@/lib/app-config";
 import { clearAllAppData } from "@/lib/compliance";
+import { useWallet } from "@/context/wallet-provider";
 
 const THEMES = [
   { id: "ocean", label: "Ocean", className: "from-sky-400 to-blue-600" },
@@ -15,6 +18,7 @@ const THEMES = [
 const AVATARS = ["🦊", "🐼", "🦁", "🐸", "🦄", "🐙"];
 
 export function CustomView() {
+  const { mode } = useWallet();
   const [avatar, setAvatar] = useState("🦊");
   const [theme, setTheme] = useState(THEMES[0].id);
   const [cleared, setCleared] = useState(false);
@@ -36,6 +40,9 @@ export function CustomView() {
 
   return (
     <div className="space-y-4">
+      <AuthPanel />
+      <CoinPacks />
+
       <section
         className={`rounded-3xl bg-gradient-to-br ${activeTheme.className} p-6 text-center text-white shadow-lg`}
       >
@@ -109,8 +116,7 @@ export function CustomView() {
       <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
         <h3 className="font-semibold text-rose-900">Delete app data</h3>
         <p className="mt-1 text-xs text-rose-800/90">
-          Removes virtual balances, rewards progress, and compliance choices from this
-          device (Google Play data deletion expectation).
+          Clears on-device data{mode === "cloud" ? " (cloud balances stay on your account until you delete the account in Supabase)" : ""}.
         </p>
         <Button
           type="button"

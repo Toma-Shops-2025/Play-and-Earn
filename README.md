@@ -11,6 +11,12 @@ npm run dev -- --port 43123
 
 Open [http://localhost:43123](http://localhost:43123).
 
+## Backend, auth & Stripe
+
+Optional cloud accounts and payments: **[BACKEND_SETUP.md](./BACKEND_SETUP.md)**.
+
+Without `.env.local`, the app keeps using **on-device-only** demo mode.
+
 ## Google Play release
 
 1. Read **[play-store/PLAY_CONSOLE_CHECKLIST.md](./play-store/PLAY_CONSOLE_CHECKLIST.md)** end to end.

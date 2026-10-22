@@ -36,7 +36,7 @@ export function RewardsView() {
                 size="sm"
                 className="mt-2 w-full"
                 disabled={claimed || !isToday}
-                onClick={() => claimDailyReward(index, reward)}
+                onClick={() => void claimDailyReward(index, reward)}
               >
                 {claimed ? "Claimed" : isToday ? "Claim" : "Locked"}
               </Button>

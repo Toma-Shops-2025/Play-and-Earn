@@ -13,7 +13,7 @@ export function FlipCardGame({ onClose }: { onClose: () => void }) {
   function pick(index: number) {
     if (picked !== null) return;
     setPicked(index);
-    addCoins(prizes[index]);
+    void addCoins("flip", prizes[index]);
   }
 
   return (

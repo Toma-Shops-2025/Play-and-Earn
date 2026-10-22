@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AuthProvider } from "@/context/auth-provider";
 import { WalletProvider, useWallet } from "@/context/wallet-provider";
 import { BottomNav } from "@/components/play-earn/bottom-nav";
 import { PayoutsView } from "@/components/play-earn/views/payouts-view";
@@ -13,7 +14,7 @@ import { APP_CONFIG } from "@/lib/app-config";
 import { NativeShell } from "@/components/play-earn/native-shell";
 
 function PlayEarnShell() {
-  const { activeTab } = useWallet();
+  const { activeTab, mode } = useWallet();
   const [ready, setReady] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
 
@@ -29,7 +30,9 @@ function PlayEarnShell() {
           <h1 className="text-lg font-extrabold tracking-tight text-slate-900">
             {APP_CONFIG.name}
           </h1>
-          <p className="text-xs text-slate-600">Virtual rewards · entertainment only</p>
+          <p className="text-xs text-slate-600">
+            {mode === "cloud" ? "Cloud save · signed in" : "On-device save · sign in to sync"}
+          </p>
         </header>
 
         {activeTab === "payouts" ? <PayoutsView /> : null}
@@ -47,9 +50,11 @@ function PlayEarnShell() {
 
 export function PlayEarnApp() {
   return (
-    <WalletProvider>
-      <NativeShell />
-      <PlayEarnShell />
-    </WalletProvider>
+    <AuthProvider>
+      <WalletProvider>
+        <NativeShell />
+        <PlayEarnShell />
+      </WalletProvider>
+    </AuthProvider>
   );
 }

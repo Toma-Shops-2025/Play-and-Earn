@@ -44,7 +44,7 @@ export function ScratchCardGame({ onClose }: { onClose: () => void }) {
     setScratchedPixels(ratio);
     if (ratio > 0.45) {
       setRevealed(true);
-      addCoins(prize);
+      void addCoins("scratch", prize);
     }
   }
 

@@ -128,7 +128,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }));
     return {
       ok: true,
-      message: `Cashout of $${amount.toFixed(2)} submitted to PayPal (demo).`,
+      message: `Demo cashout recorded for $${amount.toFixed(2)} (virtual only).`,
     };
   }, [state.cashBalance]);
 

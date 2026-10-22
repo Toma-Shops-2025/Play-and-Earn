@@ -44,8 +44,8 @@ export function StatusBanner() {
           </div>
 
           <div className="flex flex-col items-center gap-1">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-700/80 text-[10px] font-bold">
-              PP
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-700/80 text-base">
+              💰
             </div>
             <span className="text-sm font-bold text-lime-300 tabular-nums">
               {formatCash(cashBalance)}
@@ -54,8 +54,8 @@ export function StatusBanner() {
         </div>
       </div>
       <p className="rounded-xl bg-white px-3 py-2 text-center text-[11px] leading-snug text-slate-600 shadow-sm sm:text-xs">
-        Coins will be automatically changed into cash every 3 hours (may be
-        delayed, please wait patiently).
+        Virtual coins convert to simulated cash on a timer (entertainment only — no
+        real payouts).
       </p>
     </section>
   );

@@ -19,10 +19,10 @@ export function WalletCard() {
     <section className="rounded-3xl bg-gradient-to-br from-[#1a2f6b] via-[#15285f] to-[#0f1f4d] p-4 text-white shadow-lg">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-[10px] font-bold">
-            PP
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-lg">
+            💰
           </div>
-          <span className="text-xs text-white/70">PayPal wallet</span>
+          <span className="text-xs text-white/70">Rewards wallet (virtual)</span>
         </div>
         <span className="text-xs text-white/80">UID: {uid}</span>
       </div>
@@ -45,7 +45,7 @@ export function WalletCard() {
         onClick={handleCashout}
         className="mt-5 h-12 w-full rounded-2xl bg-lime-500 text-base font-bold text-slate-900 hover:bg-lime-400"
       >
-        Cashout
+        Demo cashout
       </Button>
 
       {message ? (

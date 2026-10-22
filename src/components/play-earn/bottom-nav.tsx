@@ -8,7 +8,7 @@ const tabs: { id: TabId; label: string; icon: typeof Wallet }[] = [
   { id: "payouts", label: "Payouts", icon: Wallet },
   { id: "rewards", label: "Rewards", icon: Gift },
   { id: "games", label: "Games", icon: Gamepad2 },
-  { id: "custom", label: "Custom", icon: Shirt },
+  { id: "custom", label: "Profile", icon: Shirt },
 ];
 
 export function BottomNav() {

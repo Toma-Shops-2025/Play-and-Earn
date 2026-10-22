@@ -1,31 +1,53 @@
 # Play & Earn Arcade
 
-A mobile-first **play-to-earn style demo** inspired by reward gaming apps. It includes a payouts dashboard, four mini-games, daily rewards, and profile customization. Balances are stored in the browser only — **this is not real money** and does not connect to PayPal or payment processors.
+Mobile-style **virtual rewards** arcade (mini-games, wallet UI, daily check-ins). Packaged for **Google Play** with Capacitor. All balances are **entertainment only** — not real money.
 
-## Features
-
-- Payouts tab matching the reference layout: coin timer, cash balance, wallet card, cashout, and game grid
-- Mini-games: Lucky Spin, Lucky Slot, Scratch Card, Flip Card
-- Rewards tab with a 7-day check-in streak
-- Games and Custom tabs for full game list and avatar/theme picks
-- Local persistence via `localStorage`
-
-## Run locally
+## Quick start (web preview)
 
 ```bash
 npm install
 npm run dev -- --port 43123
 ```
 
-Open [http://localhost:43123](http://localhost:43123). Use a narrow viewport or your phone’s browser for the intended layout.
+Open [http://localhost:43123](http://localhost:43123).
 
-## Scripts
+## Google Play release
 
-- `npm run dev` — development server
-- `npm run build` — production build
-- `npm run start` — serve production build
-- `npm run lint` — ESLint
+1. Read **[play-store/PLAY_CONSOLE_CHECKLIST.md](./play-store/PLAY_CONSOLE_CHECKLIST.md)** end to end.
+2. Edit **`src/lib/app-config.ts`** (support email, package id, privacy URLs).
+3. Host a public privacy policy — **[play-store/HOSTING_PRIVACY.md](./play-store/HOSTING_PRIVACY.md)**.
+4. Build and sign an AAB — **[ANDROID_RELEASE.md](./ANDROID_RELEASE.md)**.
+
+```bash
+npm run build:mobile    # static web export + cap sync
+npm run android:open    # Android Studio
+```
+
+## Project layout
+
+| Path | Purpose |
+|------|---------|
+| `src/components/play-earn/` | UI, games, onboarding |
+| `src/lib/app-config.ts` | Store id, support email, legal URLs |
+| `android/` | Capacitor Android project (upload to Play Console) |
+| `play-store/` | Listing copy, Data safety draft, checklist |
+| `out/` | Static export (generated; host for privacy policy) |
+
+## Compliance features
+
+- First-launch age + Terms/Privacy acceptance
+- In-app Privacy Policy and Terms (`/privacy/`, `/terms/`)
+- Profile → **Delete all data on device** (local storage wipe)
+- No third-party analytics or ad SDKs in this build
 
 ## Stack
 
-Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui
+Next.js (static export), TypeScript, Tailwind, shadcn/ui, Capacitor 8, Android SDK 36 target
+
+## Scripts
+
+- `npm run dev` — local web development
+- `npm run build` — static export to `out/`
+- `npm run build:mobile` — export + sync into `android/`
+- `npm run assets:generate` — launcher icons and splash screens
+- `npm run lint` — ESLint

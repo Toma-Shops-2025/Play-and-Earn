@@ -13,14 +13,35 @@ import { LuckySpin } from "@/components/play-earn/games/lucky-spin";
 import { LuckySlot } from "@/components/play-earn/games/lucky-slot";
 import { ScratchCardGame } from "@/components/play-earn/games/scratch-card";
 import { FlipCardGame } from "@/components/play-earn/games/flip-card";
+import { ECONOMY } from "@/lib/economy-config";
+import { registerGameOpen } from "@/lib/game-session-ads";
+import { showInterstitialWithFallback } from "@/lib/rewarded-ads";
 
 export function GameGrid({ compact = false }: { compact?: boolean }) {
   const [openGame, setOpenGame] = useState<GameId | null>(null);
+  const [adBusy, setAdBusy] = useState(false);
 
   const active = GAMES.find((g) => g.id === openGame);
 
+  async function handlePlay(gameId: GameId) {
+    if (adBusy) return;
+    setAdBusy(true);
+    try {
+      const showInterstitial = registerGameOpen();
+      if (showInterstitial) {
+        await showInterstitialWithFallback();
+      }
+      setOpenGame(gameId);
+    } finally {
+      setAdBusy(false);
+    }
+  }
+
   return (
     <>
+      <p className="text-center text-[11px] text-slate-500">
+        A short ad may play every {ECONOMY.gamesBetweenInterstitials} mini-games (Android).
+      </p>
       <div
         className={
           compact
@@ -47,10 +68,11 @@ export function GameGrid({ compact = false }: { compact?: boolean }) {
             </div>
             <Button
               type="button"
-              onClick={() => setOpenGame(game.id)}
+              disabled={adBusy}
+              onClick={() => void handlePlay(game.id)}
               className="mt-4 h-10 w-full rounded-xl bg-lime-500 font-bold text-slate-900 hover:bg-lime-400"
             >
-              Play &amp; Earn
+              {adBusy ? "Please wait…" : "Play & Earn"}
             </Button>
           </article>
         ))}

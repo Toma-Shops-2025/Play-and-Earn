@@ -16,6 +16,8 @@ import com.unity3d.mediation.LevelPlayInitError;
 import com.unity3d.mediation.LevelPlayInitListener;
 import com.unity3d.mediation.LevelPlayInitRequest;
 import com.unity3d.mediation.rewarded.LevelPlayReward;
+import com.unity3d.mediation.interstitial.LevelPlayInterstitialAd;
+import com.unity3d.mediation.interstitial.LevelPlayInterstitialAdListener;
 import com.unity3d.mediation.rewarded.LevelPlayRewardedAd;
 import com.unity3d.mediation.rewarded.LevelPlayRewardedAdListener;
 
@@ -25,8 +27,11 @@ public class RewardedAdsPlugin extends Plugin {
     private static final String TAG = "RewardedAds";
     private boolean sdkInitialized = false;
     private LevelPlayRewardedAd rewardedAd;
-    private PluginCall pendingCall;
+    private LevelPlayInterstitialAd interstitialAd;
+    private PluginCall pendingRewardedCall;
+    private PluginCall pendingInterstitialCall;
     private boolean rewardGrantedThisShow = false;
+    private boolean interstitialWasShown = false;
 
     @PluginMethod
     public void initialize(PluginCall call) {
@@ -37,9 +42,9 @@ public class RewardedAdsPlugin extends Plugin {
         }
 
         String appKey = activity.getString(R.string.levelplay_app_key);
-        String adUnitId = activity.getString(R.string.levelplay_rewarded_ad_unit_id);
+        String rewardedAdUnitId = activity.getString(R.string.levelplay_rewarded_ad_unit_id);
 
-        if (appKey.contains("REPLACE") || adUnitId.contains("REPLACE")) {
+        if (appKey.contains("REPLACE") || rewardedAdUnitId.contains("REPLACE")) {
             JSObject ret = new JSObject();
             ret.put("ok", false);
             ret.put(
@@ -67,7 +72,8 @@ public class RewardedAdsPlugin extends Plugin {
                 @Override
                 public void onInitSuccess(@NonNull LevelPlayConfiguration configuration) {
                     sdkInitialized = true;
-                    createRewardedAd(adUnitId);
+                    createRewardedAd(rewardedAdUnitId);
+                    createInterstitialAd(activity.getString(R.string.levelplay_interstitial_ad_unit_id));
                     JSObject ret = new JSObject();
                     ret.put("ok", true);
                     call.resolve(ret);
@@ -109,7 +115,7 @@ public class RewardedAdsPlugin extends Plugin {
                     @NonNull LevelPlayAdError error,
                     @NonNull LevelPlayAdInfo adInfo
                 ) {
-                    finishPending(false, error.getErrorMessage());
+                    finishRewarded(false, error.getErrorMessage());
                 }
 
                 @Override
@@ -118,7 +124,7 @@ public class RewardedAdsPlugin extends Plugin {
                     @NonNull LevelPlayAdInfo adInfo
                 ) {
                     rewardGrantedThisShow = true;
-                    finishPending(true, null);
+                    finishRewarded(true, null);
                 }
 
                 @Override
@@ -126,8 +132,8 @@ public class RewardedAdsPlugin extends Plugin {
 
                 @Override
                 public void onAdClosed(@NonNull LevelPlayAdInfo adInfo) {
-                    if (pendingCall != null && !rewardGrantedThisShow) {
-                        finishPending(false, "Ad closed before reward");
+                    if (pendingRewardedCall != null && !rewardGrantedThisShow) {
+                        finishRewarded(false, "Ad closed before reward");
                     }
                     rewardGrantedThisShow = false;
                     if (rewardedAd != null) {
@@ -137,6 +143,53 @@ public class RewardedAdsPlugin extends Plugin {
             }
         );
         rewardedAd.loadAd();
+    }
+
+    private void createInterstitialAd(String adUnitId) {
+        if (adUnitId == null || adUnitId.contains("REPLACE")) {
+            Log.w(TAG, "Interstitial ad unit not configured");
+            return;
+        }
+        interstitialAd = new LevelPlayInterstitialAd(adUnitId);
+        interstitialAd.setListener(
+            new LevelPlayInterstitialAdListener() {
+                @Override
+                public void onAdLoaded(@NonNull LevelPlayAdInfo adInfo) {
+                    Log.d(TAG, "Interstitial loaded");
+                }
+
+                @Override
+                public void onAdLoadFailed(@NonNull LevelPlayAdError error) {
+                    Log.e(TAG, "Interstitial load failed: " + error.getErrorMessage());
+                }
+
+                @Override
+                public void onAdDisplayed(@NonNull LevelPlayAdInfo adInfo) {
+                    interstitialWasShown = true;
+                }
+
+                @Override
+                public void onAdDisplayFailed(
+                    @NonNull LevelPlayAdError error,
+                    @NonNull LevelPlayAdInfo adInfo
+                ) {
+                    finishInterstitial(false, error.getErrorMessage());
+                }
+
+                @Override
+                public void onAdClicked(@NonNull LevelPlayAdInfo adInfo) {}
+
+                @Override
+                public void onAdClosed(@NonNull LevelPlayAdInfo adInfo) {
+                    finishInterstitial(interstitialWasShown, null);
+                    interstitialWasShown = false;
+                    if (interstitialAd != null) {
+                        interstitialAd.loadAd();
+                    }
+                }
+            }
+        );
+        interstitialAd.loadAd();
     }
 
     @PluginMethod
@@ -157,29 +210,73 @@ public class RewardedAdsPlugin extends Plugin {
             call.reject("Ad not ready yet. Try again in a few seconds.");
             return;
         }
-        if (pendingCall != null) {
+        if (pendingRewardedCall != null || pendingInterstitialCall != null) {
             call.reject("Ad already in progress");
             return;
         }
-        pendingCall = call;
+        pendingRewardedCall = call;
         rewardGrantedThisShow = false;
         Activity activity = getActivity();
         if (activity == null) {
-            pendingCall = null;
+            pendingRewardedCall = null;
             call.reject("No activity");
             return;
         }
         rewardedAd.showAd(activity);
     }
 
-    private void finishPending(boolean rewarded, String message) {
-        if (pendingCall == null) return;
+    @PluginMethod
+    public void isInterstitialAdReady(PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("ready", interstitialAd != null && interstitialAd.isAdReady());
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void showInterstitialAd(PluginCall call) {
+        if (!sdkInitialized || interstitialAd == null) {
+            call.reject("Interstitial not configured");
+            return;
+        }
+        if (!interstitialAd.isAdReady()) {
+            interstitialAd.loadAd();
+            call.reject("Interstitial not ready yet");
+            return;
+        }
+        if (pendingInterstitialCall != null || pendingRewardedCall != null) {
+            call.reject("Ad already in progress");
+            return;
+        }
+        pendingInterstitialCall = call;
+        interstitialWasShown = false;
+        Activity activity = getActivity();
+        if (activity == null) {
+            pendingInterstitialCall = null;
+            call.reject("No activity");
+            return;
+        }
+        interstitialAd.showAd(activity);
+    }
+
+    private void finishRewarded(boolean rewarded, String message) {
+        if (pendingRewardedCall == null) return;
         JSObject ret = new JSObject();
         ret.put("rewarded", rewarded);
         if (message != null) {
             ret.put("message", message);
         }
-        pendingCall.resolve(ret);
-        pendingCall = null;
+        pendingRewardedCall.resolve(ret);
+        pendingRewardedCall = null;
+    }
+
+    private void finishInterstitial(boolean shown, String message) {
+        if (pendingInterstitialCall == null) return;
+        JSObject ret = new JSObject();
+        ret.put("shown", shown);
+        if (message != null) {
+            ret.put("message", message);
+        }
+        pendingInterstitialCall.resolve(ret);
+        pendingInterstitialCall = null;
     }
 }

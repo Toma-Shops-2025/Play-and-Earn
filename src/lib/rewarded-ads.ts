@@ -6,10 +6,17 @@ export type RewardedAdResult = {
   message?: string;
 };
 
+export type InterstitialAdResult = {
+  shown: boolean;
+  message?: string;
+};
+
 export interface RewardedAdsPlugin {
   initialize(): Promise<{ ok: boolean; message?: string }>;
   showRewardedAd(): Promise<RewardedAdResult>;
   isRewardedAdReady(): Promise<{ ready: boolean }>;
+  showInterstitialAd(): Promise<InterstitialAdResult>;
+  isInterstitialAdReady(): Promise<{ ready: boolean }>;
 }
 
 export const RewardedAds = registerPlugin<RewardedAdsPlugin>("RewardedAds", {
@@ -38,4 +45,23 @@ export async function showRewardedAdWithFallback(): Promise<RewardedAdResult> {
 
 export function formatAdRewardLabel(): string {
   return `+${REWARDED_AD_CONFIG.coinsPerAd} coins`;
+}
+
+export async function showInterstitialWithFallback(): Promise<InterstitialAdResult> {
+  try {
+    const init = await RewardedAds.initialize();
+    if (!init.ok) {
+      return { shown: false, message: init.message };
+    }
+    const { ready } = await RewardedAds.isInterstitialAdReady();
+    if (!ready) {
+      return { shown: false, message: "Interstitial not ready" };
+    }
+    return await RewardedAds.showInterstitialAd();
+  } catch (e) {
+    return {
+      shown: false,
+      message: e instanceof Error ? e.message : "Interstitial failed",
+    };
+  }
 }

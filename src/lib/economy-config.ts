@@ -36,6 +36,12 @@ export const ECONOMY = {
    * Update with your LevelPlay revenue reports.
    */
   planningRewardedEcpmUsd: 18,
+
+  /** Show a LevelPlay interstitial every N mini-game opens (Android). */
+  gamesBetweenInterstitials: 3,
+
+  /** User must complete a rewarded video before claiming that day's streak reward. */
+  dailyStreakRequiresRewardedAd: true,
 } as const;
 
 export function coinsToVirtualCash(coins: number): number {

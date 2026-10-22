@@ -40,10 +40,11 @@ Update `planningRewardedEcpmUsd` monthly from **LevelPlay → Reports**.
 ## Revenue checklist
 
 1. **Maximize rewarded ads** — “Watch Ad” tab, consider gating daily streak behind an optional ad (future).
-2. **Add interstitials** between game sessions (not implemented; high impact — use LevelPlay interstitial ad unit).
-3. **Sell coin packs** on Android via **Google Play Billing** (required for in-app digital goods).
-4. **Keep Stripe** for web-only packs if you host a web version.
-5. **Do not enable real payouts** until:  
+2. **Interstitials** — shown every `gamesBetweenInterstitials` mini-game opens (default **3**). Tune in `economy-config.ts`.
+3. **Daily streak** — requires one **rewarded** video before claim when `dailyStreakRequiresRewardedAd` is true.
+4. **Sell coin packs** on Android via **Google Play Billing** (required for in-app digital goods).
+5. **Keep Stripe** for web-only packs if you host a web version.
+6. **Do not enable real payouts** until:  
    `monthly_ad_revenue + iap_revenue > payouts + store_fees + infra + 30% buffer`
 
 ## When to enable real money

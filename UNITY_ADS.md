@@ -18,7 +18,7 @@ When Supabase is enabled, rewards are granted via `grant_ad_reward` RPC **after*
 1. Open [Unity LevelPlay](https://platform.unity.com/) (same Unity account as your other games).
 2. **Add app** → Android → package name `com.playearn.arcade` (or your `applicationId`).
 3. Copy the **App key** (sometimes labeled LevelPlay app key).
-4. **Ad units** → create **Rewarded** → copy the **Ad unit ID**.
+4. **Ad units** → create **Rewarded** and **Interstitial** → copy each **Ad unit ID**.
 5. Under **Networks**, enable **Unity Ads** (and any other networks you use).
 
 ## 2. Android project
@@ -28,6 +28,7 @@ Edit `android/app/src/main/res/values/levelplay.xml`:
 ```xml
 <string name="levelplay_app_key">your_app_key</string>
 <string name="levelplay_rewarded_ad_unit_id">your_rewarded_ad_unit_id</string>
+<string name="levelplay_interstitial_ad_unit_id">your_interstitial_ad_unit_id</string>
 ```
 
 Rebuild:

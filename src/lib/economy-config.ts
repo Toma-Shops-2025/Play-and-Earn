@@ -6,6 +6,9 @@ export const ECONOMY = {
   /** Virtual cash is NOT real money unless you explicitly enable payouts in ops. */
   realMoneyPayoutsEnabled: false,
 
+  /** Automatic coin → cash “payout” cadence (matches reference app UI). */
+  conversionIntervalHours: 3,
+
   /**
    * Simulated dollars earned per coin when the conversion timer fires.
    * Higher = users reach “cashout” faster (more liability in copy/UX).

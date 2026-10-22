@@ -13,7 +13,13 @@ import { useAuth } from "@/context/auth-provider";
 import type { GameId } from "@/lib/games";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { REWARDED_AD_CONFIG } from "@/lib/ads-config";
-import { ECONOMY, coinsToVirtualCash } from "@/lib/economy-config";
+import { ECONOMY } from "@/lib/economy-config";
+import {
+  applyElapsedConversionPayouts,
+  conversionProgressPercent,
+  getDefaultConversionDueAt,
+  secondsUntilConversionDue,
+} from "@/lib/conversion";
 import { APP_CONFIG } from "@/lib/app-config";
 import { getLocalAdStats, grantLocalAdReward } from "@/lib/ad-rewards-local";
 import {
@@ -24,7 +30,6 @@ import {
   fetchCloudWallet,
 } from "@/lib/wallet-api";
 
-const CONVERSION_INTERVAL_SECONDS = 3 * 60 * 60;
 const STORAGE_KEY = "play-earn-wallet-v1";
 const MIN_CASHOUT = APP_CONFIG.minCashoutVirtualDollars;
 
@@ -42,6 +47,7 @@ type WalletState = {
   coins: number;
   cashBalance: number;
   secondsUntilConversion: number;
+  conversionDueAt: string;
   withdrawals: Withdrawal[];
   claimedRewardDays: number[];
 };
@@ -57,14 +63,20 @@ type WalletContextValue = WalletState & {
   cashout: () => Promise<{ ok: boolean; message: string }>;
   claimDailyReward: (dayIndex: number, coins: number) => Promise<boolean>;
   conversionProgress: number;
+  lastPayoutNotice: string | null;
   refreshWallet: () => Promise<void>;
 };
+
+const defaultConversionDueAt = getDefaultConversionDueAt(
+  Date.now() - (1 * 3600 + 28 * 60 + 54) * 1000,
+);
 
 const defaultState: WalletState = {
   uid: 6268237,
   coins: 10,
   cashBalance: 0.03,
-  secondsUntilConversion: 1 * 3600 + 28 * 60 + 54,
+  conversionDueAt: defaultConversionDueAt,
+  secondsUntilConversion: secondsUntilConversionDue(defaultConversionDueAt),
   withdrawals: [],
   claimedRewardDays: [0, 1],
 };
@@ -76,7 +88,24 @@ function loadLocalState(): WalletState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState;
-    return { ...defaultState, ...JSON.parse(raw) } as WalletState;
+    const parsed = { ...defaultState, ...JSON.parse(raw) } as WalletState;
+    if (!parsed.conversionDueAt) {
+      parsed.conversionDueAt = getDefaultConversionDueAt(
+        Date.now() - (parsed.secondsUntilConversion ?? 0) * 1000,
+      );
+    }
+    const applied = applyElapsedConversionPayouts(
+      parsed.coins,
+      parsed.cashBalance,
+      parsed.conversionDueAt,
+    );
+    return {
+      ...parsed,
+      coins: applied.coins,
+      cashBalance: applied.cashBalance,
+      conversionDueAt: applied.conversionDueAt,
+      secondsUntilConversion: secondsUntilConversionDue(applied.conversionDueAt),
+    };
   } catch {
     return defaultState;
   }
@@ -97,18 +126,31 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   });
   const [activeTab, setActiveTab] = useState<TabId>("payouts");
   const [hydrated, setHydrated] = useState(false);
+  const [lastPayoutNotice, setLastPayoutNotice] = useState<string | null>(null);
 
   const refreshWallet = useCallback(async () => {
     if (!cloudActive) return;
     const cloud = await fetchCloudWallet();
     if (!cloud) return;
-    setState({
-      uid: cloud.uid,
-      coins: cloud.coins,
-      cashBalance: cloud.cashBalance,
-      secondsUntilConversion: cloud.secondsUntilConversion,
-      withdrawals: cloud.withdrawals,
-      claimedRewardDays: cloud.claimedRewardDays,
+    setState((prev) => {
+      const dueAt = new Date(
+        Date.now() + cloud.secondsUntilConversion * 1000,
+      ).toISOString();
+      if (cloud.cashBalance > prev.cashBalance + 0.0001) {
+        const delta = cloud.cashBalance - prev.cashBalance;
+        setLastPayoutNotice(
+          `3-hour payout: +$${delta.toFixed(2)} added to your balance`,
+        );
+      }
+      return {
+        uid: cloud.uid,
+        coins: cloud.coins,
+        cashBalance: cloud.cashBalance,
+        secondsUntilConversion: cloud.secondsUntilConversion,
+        conversionDueAt: dueAt,
+        withdrawals: cloud.withdrawals,
+        claimedRewardDays: cloud.claimedRewardDays,
+      };
     });
     setAdStats({
       adsWatchedToday: cloud.adsWatchedToday,
@@ -133,27 +175,39 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    if (cloudActive) {
-      const id = window.setInterval(() => {
-        void refreshWallet();
-      }, 3000);
-      return () => window.clearInterval(id);
-    }
-
     const id = window.setInterval(() => {
+      if (cloudActive) {
+        setState((prev) => {
+          const remaining = secondsUntilConversionDue(prev.conversionDueAt);
+          if (remaining <= 0) {
+            void refreshWallet();
+          }
+          return { ...prev, secondsUntilConversion: remaining };
+        });
+        return;
+      }
+
       setState((prev) => {
-        if (prev.secondsUntilConversion <= 1) {
-          const addedCash = coinsToVirtualCash(prev.coins);
-          return {
-            ...prev,
-            coins: 0,
-            cashBalance: prev.cashBalance + addedCash,
-            secondsUntilConversion: CONVERSION_INTERVAL_SECONDS,
-          };
+        const remaining = secondsUntilConversionDue(prev.conversionDueAt);
+        if (remaining > 0) {
+          return { ...prev, secondsUntilConversion: remaining };
+        }
+        const applied = applyElapsedConversionPayouts(
+          prev.coins,
+          prev.cashBalance,
+          prev.conversionDueAt,
+        );
+        if (applied.cashAdded > 0) {
+          setLastPayoutNotice(
+            `3-hour payout: +${applied.cashAdded.toFixed(2)} added to your balance`,
+          );
         }
         return {
           ...prev,
-          secondsUntilConversion: prev.secondsUntilConversion - 1,
+          coins: applied.coins,
+          cashBalance: applied.cashBalance,
+          conversionDueAt: applied.conversionDueAt,
+          secondsUntilConversion: secondsUntilConversionDue(applied.conversionDueAt),
         };
       });
     }, 1000);
@@ -163,13 +217,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated || !cloudActive) return;
     const id = window.setInterval(() => {
-      setState((prev) => ({
-        ...prev,
-        secondsUntilConversion: Math.max(0, prev.secondsUntilConversion - 1),
-      }));
-    }, 1000);
+      void refreshWallet();
+    }, 15_000);
     return () => window.clearInterval(id);
-  }, [hydrated, cloudActive]);
+  }, [hydrated, cloudActive, refreshWallet]);
 
   const grantAdReward = useCallback(async () => {
     if (cloudActive) {
@@ -253,10 +304,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     [cloudActive, refreshWallet, state.claimedRewardDays],
   );
 
-  const conversionProgress = useMemo(() => {
-    const elapsed = CONVERSION_INTERVAL_SECONDS - state.secondsUntilConversion;
-    return Math.min(100, (elapsed / CONVERSION_INTERVAL_SECONDS) * 100);
-  }, [state.secondsUntilConversion]);
+  const conversionProgress = useMemo(
+    () => conversionProgressPercent(state.secondsUntilConversion),
+    [state.secondsUntilConversion],
+  );
 
   const value = useMemo(
     () => ({
@@ -270,6 +321,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       cashout,
       claimDailyReward,
       conversionProgress,
+      lastPayoutNotice,
       refreshWallet,
     }),
     [
@@ -282,6 +334,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       cashout,
       claimDailyReward,
       conversionProgress,
+      lastPayoutNotice,
       refreshWallet,
     ],
   );

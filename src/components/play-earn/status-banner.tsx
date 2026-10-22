@@ -1,11 +1,17 @@
 "use client";
 
+import { ECONOMY } from "@/lib/economy-config";
 import { formatCash, formatCountdown } from "@/lib/format";
 import { useWallet } from "@/context/wallet-provider";
 
 export function StatusBanner() {
-  const { coins, cashBalance, secondsUntilConversion, conversionProgress } =
-    useWallet();
+  const {
+    coins,
+    cashBalance,
+    secondsUntilConversion,
+    conversionProgress,
+    lastPayoutNotice,
+  } = useWallet();
 
   return (
     <section className="space-y-2">
@@ -53,9 +59,15 @@ export function StatusBanner() {
           </div>
         </div>
       </div>
+      {lastPayoutNotice ? (
+        <p className="rounded-xl bg-lime-50 px-3 py-2 text-center text-[11px] font-medium text-lime-900 shadow-sm sm:text-xs">
+          {lastPayoutNotice}
+        </p>
+      ) : null}
       <p className="rounded-xl bg-white px-3 py-2 text-center text-[11px] leading-snug text-slate-600 shadow-sm sm:text-xs">
-        Virtual coins convert to simulated cash on a timer (entertainment only — no
-        real payouts).
+        Coins will be automatically changed into cash every{" "}
+        {ECONOMY.conversionIntervalHours} hours (may be delayed, please wait
+        patiently). Balances are virtual unless you enable real payouts.
       </p>
     </section>
   );

@@ -9,11 +9,14 @@ import { useWallet } from "@/context/wallet-provider";
 export function WalletCard() {
   const { uid, cashBalance, cashout, mode } = useWallet();
   const [message, setMessage] = useState<string | null>(null);
+  const [paypalEmail, setPaypalEmail] = useState("");
 
   async function handleCashout() {
-    const result = await cashout();
+    const result = await cashout(
+      mode === "cloud" ? paypalEmail.trim() : undefined,
+    );
     setMessage(result.message);
-    window.setTimeout(() => setMessage(null), 4000);
+    window.setTimeout(() => setMessage(null), 5000);
   }
 
   return (
@@ -23,7 +26,9 @@ export function WalletCard() {
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-lg">
             💰
           </div>
-          <span className="text-xs text-white/70">Rewards wallet (virtual)</span>
+          <span className="text-xs text-white/70">
+            {mode === "cloud" ? "Rewards wallet" : "Rewards wallet (virtual)"}
+          </span>
         </div>
         <span className="text-xs text-white/80">UID: {uid}</span>
       </div>
@@ -45,13 +50,31 @@ export function WalletCard() {
         </div>
       </div>
 
+      {mode === "cloud" ? (
+        <input
+          type="email"
+          autoComplete="email"
+          placeholder="PayPal email for automatic payout"
+          className="mt-4 h-11 w-full rounded-xl border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-white/50"
+          value={paypalEmail}
+          onChange={(e) => setPaypalEmail(e.target.value)}
+        />
+      ) : null}
+
       <Button
         type="button"
-        onClick={handleCashout}
-        className="mt-5 h-12 w-full rounded-2xl bg-lime-500 text-base font-bold text-slate-900 hover:bg-lime-400"
+        onClick={() => void handleCashout()}
+        className="mt-3 h-12 w-full rounded-2xl bg-lime-500 text-base font-bold text-slate-900 hover:bg-lime-400"
       >
-        {mode === "cloud" ? "Request withdrawal" : "Demo cashout"}
+        {mode === "cloud" ? "Request PayPal payout" : "Demo cashout"}
       </Button>
+
+      {mode === "cloud" ? (
+        <p className="mt-2 text-center text-[10px] text-white/60">
+          Pending payouts are processed automatically every ~15 minutes when enabled
+          in Supabase (see AUTOMATION.md).
+        </p>
+      ) : null}
 
       {message ? (
         <p className="mt-3 rounded-xl bg-white/10 px-3 py-2 text-center text-xs text-white/90">

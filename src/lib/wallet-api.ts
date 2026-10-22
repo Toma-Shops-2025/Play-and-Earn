@@ -120,7 +120,7 @@ export async function cloudClaimDailyReward(
   return Boolean(data);
 }
 
-export async function cloudRequestWithdrawal(): Promise<{
+export async function cloudRequestWithdrawal(paypalEmail?: string): Promise<{
   ok: boolean;
   message: string;
 }> {
@@ -130,6 +130,7 @@ export async function cloudRequestWithdrawal(): Promise<{
   }
   const { data, error } = await supabase.rpc("request_withdrawal", {
     p_min_amount: APP_CONFIG.minCashoutVirtualDollars,
+    p_paypal_email: paypalEmail?.trim() || null,
   });
   if (error) throw error;
   const result = data as { ok: boolean; message: string };

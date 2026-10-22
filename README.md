@@ -19,6 +19,10 @@ Open [http://localhost:43123](http://localhost:43123).
 
 Economy defaults and unit economics: **[MONETIZATION.md](./MONETIZATION.md)** — tune **`src/lib/economy-config.ts`**.
 
+## Automation
+
+Scheduled PayPal payouts, backend deploys, and what already runs on its own: **[AUTOMATION.md](./AUTOMATION.md)**.
+
 ## Backend, auth & PayPal
 
 Optional cloud accounts and PayPal coin packs: **[BACKEND_SETUP.md](./BACKEND_SETUP.md)**.

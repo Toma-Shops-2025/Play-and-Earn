@@ -60,7 +60,7 @@ type WalletContextValue = WalletState & {
   setActiveTab: (tab: TabId) => void;
   addCoins: (gameId: GameId, amount: number) => Promise<void>;
   grantAdReward: () => Promise<{ ok: boolean; message: string }>;
-  cashout: () => Promise<{ ok: boolean; message: string }>;
+  cashout: (paypalEmail?: string) => Promise<{ ok: boolean; message: string }>;
   claimDailyReward: (dayIndex: number, coins: number) => Promise<boolean>;
   conversionProgress: number;
   lastPayoutNotice: string | null;
@@ -252,9 +252,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     [cloudActive, refreshWallet],
   );
 
-  const cashout = useCallback(async () => {
+  const cashout = useCallback(async (paypalEmail?: string) => {
     if (cloudActive) {
-      const result = await cloudRequestWithdrawal();
+      const result = await cloudRequestWithdrawal(paypalEmail);
       await refreshWallet();
       return result;
     }

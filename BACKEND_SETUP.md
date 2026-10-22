@@ -55,9 +55,9 @@ PayPal redirects to `/?paypal=success&token=ORDER_ID`. The app calls `complete-p
 
 Digital coin sales **inside** the Android app must use **Google Play Billing**, not PayPal in a WebView. Use PayPal on web or external browser until Play Billing is added.
 
-## 3. Withdrawals (real money)
+## 3. Withdrawals (automatic PayPal payouts)
 
-`request_withdrawal` creates a `pending` row. For real cash, use [PayPal Payouts](https://developer.paypal.com/docs/payouts/) or manual processing — not automated in this repo.
+Users can enter a PayPal email on cashout. A scheduled worker (`process-pending-payouts`) can send [PayPal Payouts](https://developer.paypal.com/docs/payouts/) automatically — see **[AUTOMATION.md](./AUTOMATION.md)**.
 
 ## 4. Environment reference
 

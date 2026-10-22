@@ -51,6 +51,8 @@ curl -X POST \
 
 ## 2. GitHub Actions (recommended)
 
+**Full walkthrough:** [docs/GITHUB_SETUP_CHECKLIST.md](./docs/GITHUB_SETUP_CHECKLIST.md)
+
 Add these **repository secrets** (Settings → Secrets → Actions):
 
 | Secret | Purpose |
@@ -59,9 +61,14 @@ Add these **repository secrets** (Settings → Secrets → Actions):
 | `SUPABASE_PROJECT_REF` | Project ref from dashboard URL |
 | `SUPABASE_URL` | `https://xxxx.supabase.co` |
 | `CRON_SECRET` | Same value as Supabase `CRON_SECRET` |
+| `NEXT_PUBLIC_SUPABASE_URL` | For building the web app on Pages |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | For building the web app on Pages |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | For building the web app on Pages |
 
 Workflows in `.github/workflows/`:
 
+- **`ci.yml`** — `npm run build` on push/PR.
+- **`deploy-web-pages.yml`** — static site to **GitHub Pages** on push to `main`.
 - **`deploy-backend.yml`** — deploys PayPal + payout edge functions on push to `main` when `supabase/` changes.
 - **`process-payouts-cron.yml`** — calls the payout worker every **15 minutes**.
 

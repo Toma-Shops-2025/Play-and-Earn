@@ -1,0 +1,10 @@
+# Supabase CLI config (used by GitHub Actions: supabase link + functions deploy)
+# https://supabase.com/docs/guides/cli/config
+
+project_id = "your-project-ref"
+
+[api]
+enabled = true
+
+[db]
+major_version = 15

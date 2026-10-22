@@ -8,8 +8,8 @@ Configured in `src/lib/ads-config.ts`:
 
 | Setting | Value | Rationale |
 |---------|-------|-----------|
-| Coins per completed ad | **15** | Higher than a typical mini-game spin (1–8) so ads feel worthwhile |
-| Daily limit | **12** | ~180 bonus coins/day max from ads; reduces abuse/farming |
+| Coins per completed ad | **10** | Balanced vs typical eCPM; see `MONETIZATION.md` |
+| Daily limit | **25** | More ad impressions (main revenue) with a daily cap |
 
 When Supabase is enabled, rewards are granted via `grant_ad_reward` RPC **after** the native SDK reports completion.
 

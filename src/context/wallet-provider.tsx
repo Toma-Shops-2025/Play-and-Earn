@@ -13,6 +13,8 @@ import { useAuth } from "@/context/auth-provider";
 import type { GameId } from "@/lib/games";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { REWARDED_AD_CONFIG } from "@/lib/ads-config";
+import { ECONOMY, coinsToVirtualCash } from "@/lib/economy-config";
+import { APP_CONFIG } from "@/lib/app-config";
 import { getLocalAdStats, grantLocalAdReward } from "@/lib/ad-rewards-local";
 import {
   cloudClaimDailyReward,
@@ -23,8 +25,8 @@ import {
 } from "@/lib/wallet-api";
 
 const CONVERSION_INTERVAL_SECONDS = 3 * 60 * 60;
-const COINS_PER_CENT = 10;
 const STORAGE_KEY = "play-earn-wallet-v1";
+const MIN_CASHOUT = APP_CONFIG.minCashoutVirtualDollars;
 
 export type TabId = "payouts" | "rewards" | "watchAd" | "games" | "custom";
 
@@ -141,7 +143,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const id = window.setInterval(() => {
       setState((prev) => {
         if (prev.secondsUntilConversion <= 1) {
-          const addedCash = prev.coins / COINS_PER_CENT / 100;
+          const addedCash = coinsToVirtualCash(prev.coins);
           return {
             ...prev,
             coins: 0,
@@ -205,10 +207,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       await refreshWallet();
       return result;
     }
-    if (state.cashBalance < 5) {
+    if (state.cashBalance < MIN_CASHOUT) {
       return {
         ok: false,
-        message: "Minimum cashout is $5.00. Keep playing to reach the threshold!",
+        message: `Minimum balance is $${MIN_CASHOUT.toFixed(2)} virtual. Watch ads or play games to earn more!`,
       };
     }
     const amount = state.cashBalance;
@@ -227,7 +229,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }));
     return {
       ok: true,
-      message: `Demo cashout recorded for $${amount.toFixed(2)} (virtual only).`,
+      message: APP_CONFIG.realMoneyPayoutsEnabled
+        ? `Withdrawal of $${amount.toFixed(2)} submitted for processing.`
+        : `Virtual ledger entry for $${amount.toFixed(2)} (not real money).`,
     };
   }, [cloudActive, refreshWallet, state.cashBalance]);
 

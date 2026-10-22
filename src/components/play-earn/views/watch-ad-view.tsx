@@ -8,6 +8,8 @@ import { formatAdRewardLabel, showRewardedAdWithFallback } from "@/lib/rewarded-
 import { useAuth } from "@/context/auth-provider";
 import { useWallet } from "@/context/wallet-provider";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { MonetizationHint } from "@/components/play-earn/monetization-hint";
+import { ECONOMY } from "@/lib/economy-config";
 
 export function WatchAdView() {
   const { user } = useAuth();
@@ -61,7 +63,8 @@ export function WatchAdView() {
         <p className="mt-4 text-sm leading-relaxed text-white/90">
           Complete a short video to earn{" "}
           <strong>{formatAdRewardLabel()}</strong> per view (recommended rate). Up to{" "}
-          <strong>{REWARDED_AD_CONFIG.dailyLimit}</strong> videos per day.
+          <strong>{ECONOMY.rewardedAd.dailyLimit}</strong> videos per day — primary way the app
+          earns revenue.
         </p>
       </section>
 
@@ -117,6 +120,8 @@ export function WatchAdView() {
           </p>
         ) : null}
       </section>
+
+      <MonetizationHint />
 
       <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs leading-relaxed text-slate-600">
         <p className="font-semibold text-slate-800">Monetization note</p>

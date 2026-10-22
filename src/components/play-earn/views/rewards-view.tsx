@@ -1,9 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { ECONOMY } from "@/lib/economy-config";
 import { useWallet } from "@/context/wallet-provider";
 
-const WEEKLY_REWARDS = [5, 8, 10, 12, 15, 20, 30];
+const WEEKLY_REWARDS = ECONOMY.dailyStreakCoins;
 
 export function RewardsView() {
   const { claimedRewardDays, claimDailyReward, coins } = useWallet();

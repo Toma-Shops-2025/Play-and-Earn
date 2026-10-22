@@ -13,7 +13,11 @@ Open [http://localhost:43123](http://localhost:43123).
 
 ## Unity rewarded ads
 
-**Watch Ad** tab + LevelPlay on Android: **[UNITY_ADS.md](./UNITY_ADS.md)** (default **15 coins** / ad, **12** per day).
+**Watch Ad** tab + LevelPlay on Android: **[UNITY_ADS.md](./UNITY_ADS.md)**.
+
+## Profitability
+
+Economy defaults and unit economics: **[MONETIZATION.md](./MONETIZATION.md)** — tune **`src/lib/economy-config.ts`**.
 
 ## Backend, auth & Stripe
 

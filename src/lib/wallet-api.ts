@@ -1,5 +1,6 @@
 import type { GameId } from "@/lib/games";
 import { REWARDED_AD_CONFIG } from "@/lib/ads-config";
+import { APP_CONFIG } from "@/lib/app-config";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Withdrawal } from "@/context/wallet-provider";
 
@@ -128,7 +129,7 @@ export async function cloudRequestWithdrawal(): Promise<{
     return { ok: false, message: "Sign in to request a withdrawal." };
   }
   const { data, error } = await supabase.rpc("request_withdrawal", {
-    p_min_amount: 5,
+    p_min_amount: APP_CONFIG.minCashoutVirtualDollars,
   });
   if (error) throw error;
   const result = data as { ok: boolean; message: string };

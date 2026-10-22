@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatCash } from "@/lib/format";
+import { APP_CONFIG } from "@/lib/app-config";
 import { useWallet } from "@/context/wallet-provider";
 
 export function WalletCard() {
@@ -32,7 +33,11 @@ export function WalletCard() {
           <p className="text-4xl font-extrabold tracking-tight text-lime-400 tabular-nums">
             {formatCash(cashBalance)}
           </p>
-          <p className="mt-1 text-sm text-white/75">Keep playing to earn more!</p>
+          <p className="mt-1 text-sm text-white/75">
+            {APP_CONFIG.realMoneyPayoutsEnabled
+              ? `Min withdrawal $${APP_CONFIG.minCashoutVirtualDollars}`
+              : `Virtual only · min $${APP_CONFIG.minCashoutVirtualDollars} demo`}
+          </p>
         </div>
         <div className="flex shrink-0" aria-hidden>
           <span className="h-8 w-8 rounded-full bg-red-500 opacity-90" />

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useWallet } from "@/context/wallet-provider";
 import { randomInt } from "@/lib/format";
 
-const SEGMENTS = ["+1", "+2", "+3", "+5", "+1", "+2"];
+const SEGMENTS = ["+1", "+2", "+2", "+3", "+1", "+2"];
 
 export function LuckySpin({ onClose }: { onClose: () => void }) {
   const { addCoins } = useWallet();

@@ -60,9 +60,15 @@ Do these sections **in order**. Each step is one small action.
 
 ### B2. Run database SQL (one time)
 1. Supabase → **SQL Editor** → **New query**.
-2. Open the file `supabase/FULL_SCHEMA.sql` from this repo (copy all).
+2. Open the file `supabase/FULL_SCHEMA.sql` from this repo (**copy the entire file**, from line 1 to the end).
 3. Paste into the editor → **Run**.
 4. Wait for “Success”.
+
+**Troubleshooting**
+| Error | What to do |
+|--------|------------|
+| `relation "public.profiles" does not exist` | You ran a **partial** script (e.g. only the PayPal fix). **Reset:** run **all** of `FULL_SCHEMA.sql` from the top. On a brand-new project with no data, you can use **Project Settings → Database → Reset database**, then run `FULL_SCHEMA.sql` again. |
+| `cannot change return type of existing function credit_purchased_coins` | Pull latest repo, then run `supabase/scripts/fix-credit-purchased-coins.sql` **only after** `profiles` exists — or re-run the full `FULL_SCHEMA.sql` (it now drops that function before recreating it). |
 
 ### B3. Enable email login
 1. **Authentication** → **Providers** → **Email**.

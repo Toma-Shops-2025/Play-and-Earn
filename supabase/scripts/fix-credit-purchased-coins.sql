@@ -1,7 +1,22 @@
--- Run once in Supabase SQL Editor if you see:
---   cannot change return type of existing function credit_purchased_coins(uuid,integer,text)
+-- ONLY run this AFTER the base schema exists (table public.profiles).
+-- If you see "relation public.profiles does not exist", do NOT use this file yet:
+--   1. Supabase → SQL Editor → paste ALL of supabase/FULL_SCHEMA.sql → Run once.
+--   2. Skip this fix script unless you still get the return-type error on step 1.
 --
--- Safe to re-run.
+-- This file fixes:
+--   cannot change return type of existing function credit_purchased_coins(uuid,integer,text)
+
+do $$
+begin
+  if not exists (
+    select 1
+    from information_schema.tables
+    where table_schema = 'public' and table_name = 'profiles'
+  ) then
+    raise exception
+      'public.profiles is missing. Run the full file supabase/FULL_SCHEMA.sql from the beginning first (see docs/GITHUB_SETUP_CHECKLIST.md Part B2).';
+  end if;
+end $$;
 
 create table if not exists public.payment_fulfillments (
   payment_id text primary key,

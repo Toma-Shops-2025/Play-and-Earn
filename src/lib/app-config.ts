@@ -1,12 +1,15 @@
-/** Replace with your Play Console support contact before publishing. */
+/** Replace supportEmail with your Play Console contact before publishing. */
 import { ECONOMY } from "@/lib/economy-config";
+import { SITE_URL } from "@/lib/site-url";
 
 export const APP_CONFIG = {
   name: "Play & Earn Arcade",
   packageId: "com.playearn.arcade",
   supportEmail: "support@example.com",
-  privacyPolicyUrl: "https://example.com/play-earn-arcade/privacy",
-  termsUrl: "https://example.com/play-earn-arcade/terms",
+  privacyPolicyUrl: `${SITE_URL}/privacy/`,
+  termsUrl: `${SITE_URL}/terms/`,
+  siteUrl: SITE_URL,
+  githubRepoUrl: "https://github.com/Toma-Shops-2025/Play-and-Earn",
   minAge: 18,
   version: "1.0.0",
   /** Keep false until ad ARPU + IAP cover real payouts in your region. */

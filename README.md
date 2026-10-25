@@ -2,6 +2,7 @@
 
 Mobile-style **virtual rewards** arcade (mini-games, wallet UI, daily check-ins). Packaged for **Google Play** with Capacitor. All balances are **entertainment only** — not real money.
 
+**Repository:** [github.com/Toma-Shops-2025/Play-and-Earn](https://github.com/Toma-Shops-2025/Play-and-Earn)  
 **Start here (GitHub + Supabase + PayPal + Play):** **[docs/GITHUB_SETUP_CHECKLIST.md](./docs/GITHUB_SETUP_CHECKLIST.md)**
 
 ## Quick start (web preview)

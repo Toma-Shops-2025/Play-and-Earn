@@ -1,5 +1,8 @@
 # Complete setup checklist (GitHub + Supabase + PayPal + Android)
 
+**Your repo:** [github.com/Toma-Shops-2025/Play-and-Earn](https://github.com/Toma-Shops-2025/Play-and-Earn)  
+**Your live site (after Pages deploy):** [toma-shops-2025.github.io/Play-and-Earn/](https://toma-shops-2025.github.io/Play-and-Earn/)
+
 Do these sections **in order**. Each step is one small action.
 
 ---
@@ -7,15 +10,13 @@ Do these sections **in order**. Each step is one small action.
 ## Part A — GitHub repository
 
 ### A1. Put code on GitHub
-1. Open [https://github.com/new](https://github.com/new).
-2. Name your repo (example: `play-earn-arcade`).
-3. Create the repo **without** a README (you already have code).
-4. On your computer, in the project folder, run:
+1. Repo: **https://github.com/Toma-Shops-2025/Play-and-Earn**
+2. If this folder is not on GitHub yet, on your computer run:
    ```bash
-   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
-   git push -u origin main
+   git remote add github https://github.com/Toma-Shops-2025/Play-and-Earn.git
+   git push -u github main
    ```
-   (Skip if your code is already on GitHub.)
+   (If `origin` already points elsewhere, use `github` as above or change `origin` to your repo URL.)
 
 ### A2. Turn on GitHub Actions
 1. Open your repo on GitHub.
@@ -46,7 +47,8 @@ Do these sections **in order**. Each step is one small action.
 1. Open **Actions** tab.
 2. After a push to `main`, you should see **CI**, **Deploy web**, and **Deploy Supabase backend** (backend only when `supabase/` changes).
 3. Open **Deploy web** → wait for green check.
-4. **Settings** → **Pages** shows your site URL (`https://YOUR_USERNAME.github.io/YOUR_REPO/`).
+4. **Settings** → **Pages** shows your site URL:  
+   **https://toma-shops-2025.github.io/Play-and-Earn/**
 
 ---
 
@@ -91,7 +93,7 @@ Do these sections **in order**. Each step is one small action.
 1. PayPal Developer Dashboard → your app.
 2. Ensure sandbox/live app allows your site URL.
 3. After Pages deploys, use:  
-   `https://YOUR_USERNAME.github.io/YOUR_REPO/`  
+   **https://toma-shops-2025.github.io/Play-and-Earn/**  
    (PayPal return paths are `/?paypal=success` on that host.)
 
 ---

@@ -711,6 +711,8 @@ create policy "fulfillments_select_own"
   on public.payment_fulfillments for select
   using (auth.uid() = user_id);
 
+drop function if exists public.credit_purchased_coins(uuid, integer, text);
+
 create or replace function public.credit_purchased_coins(
   p_user_id uuid,
   p_coins integer,

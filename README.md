@@ -40,8 +40,16 @@ Without `.env.local`, the app keeps using **on-device-only** demo mode.
 3. Host a public privacy policy — **[play-store/HOSTING_PRIVACY.md](./play-store/HOSTING_PRIVACY.md)**.
 4. Build and sign an AAB — **[ANDROID_RELEASE.md](./ANDROID_RELEASE.md)**.
 
+**Preview on your phone (APK):** **[docs/BUILD_APK.md](./docs/BUILD_APK.md)**
+
+```powershell
+# Windows (PowerShell, repo root)
+.\build-apk.ps1
+```
+
 ```bash
 npm run build:mobile    # static web export + cap sync
+npm run build:apk       # same + Gradle debug APK (uses build-apk.ps1 / .sh)
 npm run android:open    # Android Studio
 ```
 

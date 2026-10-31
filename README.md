@@ -79,5 +79,6 @@ Next.js (static export), TypeScript, Tailwind, shadcn/ui, Capacitor 8, Android S
 - `npm run dev` — local web development
 - `npm run build` — static export to `out/`
 - `npm run build:mobile` — export + sync into `android/`
+- `npm run build:apk` — build debug APK for device preview (see `build-apk.ps1`)
 - `npm run assets:generate` — launcher icons and splash screens
 - `npm run lint` — ESLint

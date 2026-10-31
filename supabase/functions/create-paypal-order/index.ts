@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
           },
         ],
         application_context: {
-          brand_name: "Play Earn Arcade",
+          brand_name: "Play N' Earn",
           user_action: "PAY_NOW",
           return_url: `${origin}/?paypal=success`,
           cancel_url: `${origin}/?paypal=cancel`,

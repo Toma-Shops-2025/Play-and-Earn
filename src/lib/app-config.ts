@@ -3,7 +3,8 @@ import { ECONOMY } from "@/lib/economy-config";
 import { SITE_URL } from "@/lib/site-url";
 
 export const APP_CONFIG = {
-  name: "Play & Earn Arcade",
+  /** Shown on device home screen, onboarding, PayPal, and store listing. */
+  name: "Play N' Earn",
   packageId: "com.playearn.arcade",
   supportEmail: "support@example.com",
   privacyPolicyUrl: `${SITE_URL}/privacy/`,

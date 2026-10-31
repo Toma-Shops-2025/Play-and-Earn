@@ -1,4 +1,4 @@
-# Play & Earn Arcade
+# Play N' Earn
 
 Mobile-style **virtual rewards** arcade (mini-games, wallet UI, daily check-ins). Packaged for **Google Play** with Capacitor. All balances are **entertainment only** — not real money.
 

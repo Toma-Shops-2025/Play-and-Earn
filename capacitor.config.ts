@@ -2,7 +2,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.playearn.arcade",
-  appName: "Play Earn Arcade",
+  appName: "Play N' Earn",
   webDir: "out",
   android: {
     allowMixedContent: false,

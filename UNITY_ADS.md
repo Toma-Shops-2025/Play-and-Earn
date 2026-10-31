@@ -2,6 +2,19 @@
 
 This app uses **Unity LevelPlay** (Unity’s mediation SDK) for **rewarded videos** on Android. Web builds show a **simulated** ad for testing UI.
 
+## When to add **Play N' Earn** in Unity (recommended timeline)
+
+| Phase | Unity / LevelPlay | Ads live for users? |
+|-------|-------------------|---------------------|
+| **Now** (APK on your phone, no keys yet) | Optional: create the Android app in LevelPlay with package `com.playearn.arcade` | **No** — placeholders in `levelplay.xml` |
+| **Before closed testing** | Add app, ad units, Unity Ads network; paste keys into `levelplay.xml`; test on device with **Test ads** | **Test ads only** for you + testers |
+| **Closed testing (Play Console)** | Same keys; monitor fill and eCPM in LevelPlay | **Yes** — real ads if test mode off |
+| **Production** | Tune networks; raise caps only if eCPM supports it | **Yes** |
+
+**Best time to add the app in Unity:** **before you upload the first closed-testing build**, so testers can verify ads and you can read early eCPM. You do **not** need ads on day one of internal testing — but keys should be in place **before** wide closed testing.
+
+**Keep real-money payouts off** until after you have **30+ days** of ad data (see **`docs/REWARDS_AND_PAYOUTS.md`**).
+
 ## Reward economy (default)
 
 Configured in `src/lib/ads-config.ts`:
@@ -16,7 +29,7 @@ When Supabase is enabled, rewards are granted via `grant_ad_reward` RPC **after*
 ## 1. Unity dashboard
 
 1. Open [Unity LevelPlay](https://platform.unity.com/) (same Unity account as your other games).
-2. **Add app** → Android → package name `com.playearn.arcade` (or your `applicationId`).
+2. **Add app** → Android → name **Play N' Earn** → package name `com.playearn.arcade` (must match `applicationId`).
 3. Copy the **App key** (sometimes labeled LevelPlay app key).
 4. **Ad units** → create **Rewarded** and **Interstitial** → copy each **Ad unit ID**.
 5. Under **Networks**, enable **Unity Ads** (and any other networks you use).

@@ -14,6 +14,7 @@ import { LuckySlot } from "@/components/play-earn/games/lucky-slot";
 import { ScratchCardGame } from "@/components/play-earn/games/scratch-card";
 import { FlipCardGame } from "@/components/play-earn/games/flip-card";
 import { ECONOMY } from "@/lib/economy-config";
+import { APP_CONFIG } from "@/lib/app-config";
 import { registerGameOpen } from "@/lib/game-session-ads";
 import { showInterstitialWithFallback } from "@/lib/rewarded-ads";
 
@@ -72,7 +73,7 @@ export function GameGrid({ compact = false }: { compact?: boolean }) {
               onClick={() => void handlePlay(game.id)}
               className="mt-4 h-10 w-full rounded-xl bg-lime-500 font-bold text-slate-900 hover:bg-lime-400"
             >
-              {adBusy ? "Please wait…" : "Play & Earn"}
+              {adBusy ? "Please wait…" : APP_CONFIG.name}
             </Button>
           </article>
         ))}

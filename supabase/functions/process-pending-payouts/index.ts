@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         sender_batch_header: {
           sender_batch_id: batchId,
-          email_subject: "Your Play Earn Arcade payout",
+          email_subject: "Your Play N' Earn payout",
           email_message: "You received a payout. Thank you for playing!",
         },
         items: [
@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
             recipient_type: "EMAIL",
             amount: { value: amount, currency: "USD" },
             receiver: email,
-            note: "Play Earn Arcade withdrawal",
+            note: "Play N' Earn withdrawal",
             sender_item_id: withdrawalId,
           },
         ],

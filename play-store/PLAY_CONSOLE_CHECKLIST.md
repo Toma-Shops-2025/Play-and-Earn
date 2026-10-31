@@ -13,7 +13,7 @@ Use this after you build a signed **Android App Bundle (`.aab`)** from this repo
 
 ## 2. Create the app in Play Console
 
-- **App name:** Play & Earn Arcade (or your brand)
+- **App name:** Play N' Earn
 - **Default language:** English (United States)
 - **App or game:** Game
 - **Free or paid:** Free

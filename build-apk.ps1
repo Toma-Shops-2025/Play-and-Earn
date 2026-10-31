@@ -39,8 +39,10 @@ Install Android Studio, open SDK Manager once, then either:
 Write-Host "==> Syncing web app into Android..."
 if (-not $SkipNpmInstall) {
     npm install
+    if ($LASTEXITCODE -ne 0) { throw "npm install failed with exit code $LASTEXITCODE" }
 }
 npm run build:mobile
+if ($LASTEXITCODE -ne 0) { throw "npm run build:mobile failed with exit code $LASTEXITCODE" }
 
 Ensure-AndroidSdk
 

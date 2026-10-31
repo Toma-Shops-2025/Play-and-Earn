@@ -7,7 +7,7 @@
     "build": "next build",
     "build:mobile": "npm run build && cap sync android",
     "build:apk": "node scripts/build-apk.mjs",
-    "assets:generate": "node scripts/generate-store-assets.mjs && cp assets/store/icon-only.png assets/icon-only.png && cp assets/store/splash.png assets/splash.png && capacitor-assets generate --android",
+    "assets:generate": "node scripts/generate-store-assets.mjs && npx capacitor-assets generate --android",
     "android:open": "cap open android",
     "android:sync": "cap sync android",
     "start": "npx --yes serve out -l 43123",

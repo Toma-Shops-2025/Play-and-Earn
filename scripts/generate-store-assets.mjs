@@ -1,9 +1,82 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
 const root = path.join(import.meta.dirname, "..");
 const assetsDir = path.join(root, "assets", "store");
+const logoSource = path.join(assetsDir, "logo-source.png");
+
+/** Deep purple matching the logo background. */
+const BRAND_BG = { r: 42, g: 16, b: 72, alpha: 1 };
+
+async function fileExists(p) {
+  try {
+    await access(p);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Trim Canva watermark corner and normalize to square art. */
+async function loadLogoBuffer() {
+  const meta = await sharp(logoSource).metadata();
+  const w = meta.width ?? 1024;
+  const h = meta.height ?? 1024;
+  const trimRight = Math.round(w * 0.14);
+  const trimTop = Math.round(h * 0.06);
+  return sharp(logoSource)
+    .extract({
+      left: 0,
+      top: trimTop,
+      width: w - trimRight,
+      height: h - trimTop,
+    })
+    .png()
+    .toBuffer();
+}
+
+async function writeIcon1024(buf) {
+  const out = path.join(assetsDir, "icon-only.png");
+  await sharp(buf)
+    .resize(1024, 1024, {
+      fit: "contain",
+      background: BRAND_BG,
+      position: "centre",
+    })
+    .png()
+    .toFile(out);
+  console.log("wrote", out);
+  await sharp(out).toFile(path.join(root, "assets", "icon-only.png"));
+}
+
+async function writeSplash(buf) {
+  const out = path.join(assetsDir, "splash.png");
+  await sharp(buf)
+    .resize(2732, 2732, {
+      fit: "contain",
+      background: BRAND_BG,
+      position: "centre",
+    })
+    .png()
+    .toFile(out);
+  console.log("wrote", out);
+  await sharp(out).toFile(path.join(root, "assets", "splash.png"));
+}
+
+async function writeWebIcons(buf) {
+  const appDir = path.join(root, "src", "app");
+  await mkdir(appDir, { recursive: true });
+  await sharp(buf)
+    .resize(512, 512, { fit: "contain", background: BRAND_BG })
+    .png()
+    .toFile(path.join(appDir, "icon.png"));
+  await sharp(buf)
+    .resize(32, 32, { fit: "contain", background: BRAND_BG })
+    .png()
+    .toFile(path.join(appDir, "favicon.png"));
+  console.log("wrote src/app/icon.png and favicon.png");
+}
 
 async function gradientPng(size, filename) {
   const svg = `
@@ -24,11 +97,25 @@ async function gradientPng(size, filename) {
 }
 
 await mkdir(assetsDir, { recursive: true });
-await gradientPng(1024, "icon-only.png");
-await gradientPng(2732, "splash.png");
-await sharp(path.join(assetsDir, "icon-only.png")).toFile(path.join(root, "assets", "icon-only.png"));
-await sharp(path.join(assetsDir, "splash.png")).toFile(path.join(root, "assets", "splash.png"));
+
+if (await fileExists(logoSource)) {
+  const buf = await loadLogoBuffer();
+  await writeIcon1024(buf);
+  await writeSplash(buf);
+  await writeWebIcons(buf);
+} else {
+  console.warn("No assets/store/logo-source.png — using placeholder gradient.");
+  await gradientPng(1024, "icon-only.png");
+  await gradientPng(2732, "splash.png");
+  await sharp(path.join(assetsDir, "icon-only.png")).toFile(
+    path.join(root, "assets", "icon-only.png"),
+  );
+  await sharp(path.join(assetsDir, "splash.png")).toFile(
+    path.join(root, "assets", "splash.png"),
+  );
+}
+
 await writeFile(
-  path.join(root, "assets", "store", "README.txt"),
-  "Generated launcher art. Re-run: npm run assets:generate\n",
+  path.join(assetsDir, "README.txt"),
+  "logo-source.png = master art. Re-run: npm run assets:generate\n",
 );

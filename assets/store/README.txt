@@ -1,1 +1,1 @@
-Generated launcher art. Re-run: npm run assets:generate
+logo-source.png = master art. Re-run: npm run assets:generate

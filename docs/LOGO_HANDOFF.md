@@ -2,6 +2,8 @@
 
 When your **Play N' Earn** logo is ready, send it in chat (PNG preferred).
 
+**Master file in repo:** `assets/store/logo-source.png` — then run `npm run assets:generate`.
+
 ## What to send
 
 1. **Master logo** — square **1024×1024** PNG (transparent background if the icon is not full-bleed).

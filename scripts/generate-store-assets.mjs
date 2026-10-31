@@ -6,9 +6,6 @@ const root = path.join(import.meta.dirname, "..");
 const assetsDir = path.join(root, "assets", "store");
 const logoSource = path.join(assetsDir, "logo-source.png");
 
-/** Deep purple matching the logo background. */
-const BRAND_BG = { r: 42, g: 16, b: 72, alpha: 1 };
-
 async function fileExists(p) {
   try {
     await access(p);
@@ -18,22 +15,11 @@ async function fileExists(p) {
   }
 }
 
-/** Trim Canva watermark corner and normalize to square art. */
+/** Deep background matching the logo art. */
+const BRAND_BG = { r: 12, g: 14, b: 32, alpha: 1 };
+
 async function loadLogoBuffer() {
-  const meta = await sharp(logoSource).metadata();
-  const w = meta.width ?? 1024;
-  const h = meta.height ?? 1024;
-  const trimRight = Math.round(w * 0.14);
-  const trimTop = Math.round(h * 0.06);
-  return sharp(logoSource)
-    .extract({
-      left: 0,
-      top: trimTop,
-      width: w - trimRight,
-      height: h - trimTop,
-    })
-    .png()
-    .toBuffer();
+  return sharp(logoSource).png().toBuffer();
 }
 
 async function writeIcon1024(buf) {

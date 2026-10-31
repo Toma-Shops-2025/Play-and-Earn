@@ -46,7 +46,7 @@ Ensure-AndroidSdk
 
 $gradlew = Join-Path $Root "android\gradlew.bat"
 if (-not (Test-Path $gradlew)) {
-    throw "Missing $gradlew — run this script from the repo root."
+    throw "Missing $gradlew - run this script from the repo root."
 }
 
 Set-Location (Join-Path $Root "android")
@@ -74,6 +74,6 @@ Write-Host "Done. APK:" -ForegroundColor Green
 Write-Host "  $apkFull"
 Write-Host ""
 Write-Host "Install on your phone:"
-Write-Host "  1. Copy the APK to the device (USB, Drive, email, etc.)."
-Write-Host "  2. Open it and allow 'Install unknown apps' for your file app if prompted."
+Write-Host '  1. Copy the APK to the device via USB, Drive, email, etc.'
+Write-Host "  2. Open it and allow Install unknown apps for your file app if prompted."
 Write-Host "  Or with USB debugging: adb install -r `"$apkFull`""

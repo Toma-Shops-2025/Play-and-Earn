@@ -1,7 +1,8 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Play N&apos; Earn</string>
-    <string name="title_activity_main">Play N&apos; Earn</string>
+    <!-- Curly apostrophe avoids aapt2 issues with &apos; in some AGP versions -->
+    <string name="app_name">Play N\u2019 Earn</string>
+    <string name="title_activity_main">Play N\u2019 Earn</string>
     <string name="package_name">com.playearn.arcade</string>
     <string name="custom_url_scheme">com.playearn.arcade</string>
 </resources>

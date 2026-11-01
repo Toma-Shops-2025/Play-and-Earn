@@ -56,6 +56,7 @@ Set-Location (Join-Path $Root "android")
 if ($Release) {
     Write-Host "==> Building release APK (may be unsigned)..."
     & $gradlew assembleRelease
+    if ($LASTEXITCODE -ne 0) { throw "Gradle assembleRelease failed with exit code $LASTEXITCODE" }
     $apk = Join-Path $Root "android\app\build\outputs\apk\release\app-release-unsigned.apk"
     if (-not (Test-Path $apk)) {
         $apk = Join-Path $Root "android\app\build\outputs\apk\release\app-release.apk"
@@ -63,6 +64,7 @@ if ($Release) {
 } else {
     Write-Host "==> Building debug APK..."
     & $gradlew assembleDebug
+    if ($LASTEXITCODE -ne 0) { throw "Gradle assembleDebug failed with exit code $LASTEXITCODE" }
     $apk = Join-Path $Root "android\app\build\outputs\apk\debug\app-debug.apk"
 }
 

@@ -6,7 +6,7 @@ export const APP_CONFIG = {
   /** Shown on device home screen, onboarding, PayPal, and store listing. */
   name: "Play N' Earn",
   packageId: "com.playearn.arcade",
-  supportEmail: "support@example.com",
+  supportEmail: "mytomaai@gmail.com",
   privacyPolicyUrl: `${SITE_URL}/privacy/`,
   termsUrl: `${SITE_URL}/terms/`,
   faqUrl: `${SITE_URL}/faq/`,

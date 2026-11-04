@@ -64,6 +64,38 @@ async function writeWebIcons(buf) {
   console.log("wrote src/app/icon.png and favicon.png");
 }
 
+/** Google Play feature graphic: 1024×500 PNG. */
+async function writeFeatureGraphic(buf) {
+  const logo = await sharp(buf)
+    .resize(460, 460, {
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
+    .png()
+    .toBuffer();
+  const out = path.join(assetsDir, "feature-graphic.png");
+  await sharp({
+    create: {
+      width: 1024,
+      height: 500,
+      channels: 4,
+      background: BRAND_BG,
+    },
+  })
+    .composite([{ input: logo, gravity: "centre" }])
+    .png()
+    .toFile(out);
+  const playStoreDir = path.join(root, "play-store");
+  await mkdir(playStoreDir, { recursive: true });
+  await sharp(out).toFile(path.join(playStoreDir, "feature-graphic.png"));
+  await sharp(buf)
+    .resize(512, 512, { fit: "contain", background: BRAND_BG })
+    .png()
+    .toFile(path.join(playStoreDir, "icon-512.png"));
+  console.log("wrote", out);
+  console.log("wrote", path.join(playStoreDir, "icon-512.png"));
+}
+
 async function gradientPng(size, filename) {
   const svg = `
     <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
@@ -82,6 +114,47 @@ async function gradientPng(size, filename) {
   console.log("wrote", out);
 }
 
+/** Adaptive-icon foreground sizes (108dp). Android 8+ uses these, not ic_launcher.png. */
+const LAUNCHER_FOREGROUND = {
+  "mipmap-ldpi": 81,
+  "mipmap-mdpi": 108,
+  "mipmap-hdpi": 162,
+  "mipmap-xhdpi": 216,
+  "mipmap-xxhdpi": 324,
+  "mipmap-xxxhdpi": 432,
+};
+
+async function writeAndroidLauncherIcons() {
+  const icon = path.join(root, "assets", "icon-only.png");
+  if (!(await fileExists(icon))) {
+    console.warn("No assets/icon-only.png — skipping Android launcher foregrounds.");
+    return;
+  }
+  const res = path.join(root, "android", "app", "src", "main", "res");
+  for (const [folder, size] of Object.entries(LAUNCHER_FOREGROUND)) {
+    const dir = path.join(res, folder);
+    await mkdir(dir, { recursive: true });
+    const out = path.join(dir, "ic_launcher_foreground.png");
+    await sharp(icon).resize(size, size, { fit: "cover" }).png().toFile(out);
+    console.log("wrote", out);
+  }
+  const colors = path.join(res, "values", "ic_launcher_background.xml");
+  await writeFile(
+    colors,
+    `<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#0C0E20</color>
+</resources>
+`,
+  );
+  console.log("wrote", colors);
+}
+
+if (process.argv.includes("--android-icons")) {
+  await writeAndroidLauncherIcons();
+  process.exit(0);
+}
+
 await mkdir(assetsDir, { recursive: true });
 
 if (await fileExists(logoSource)) {
@@ -89,6 +162,7 @@ if (await fileExists(logoSource)) {
   await writeIcon1024(buf);
   await writeSplash(buf);
   await writeWebIcons(buf);
+  await writeFeatureGraphic(buf);
 } else {
   console.warn("No assets/store/logo-source.png — using placeholder gradient.");
   await gradientPng(1024, "icon-only.png");
@@ -99,9 +173,13 @@ if (await fileExists(logoSource)) {
   await sharp(path.join(assetsDir, "splash.png")).toFile(
     path.join(root, "assets", "splash.png"),
   );
+  const fallback = await sharp(path.join(assetsDir, "icon-only.png")).png().toBuffer();
+  await writeFeatureGraphic(fallback);
 }
 
 await writeFile(
   path.join(assetsDir, "README.txt"),
   "logo-source.png = master art. Re-run: npm run assets:generate\n",
 );
+
+await writeAndroidLauncherIcons();

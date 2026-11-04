@@ -6,14 +6,27 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import { useAuth } from "@/context/auth-provider";
 import type { GameId } from "@/lib/games";
+import type { PortalId } from "@/lib/portals";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { REWARDED_AD_CONFIG } from "@/lib/ads-config";
-import { ECONOMY } from "@/lib/economy-config";
+import {
+  ECONOMY,
+  cashRoomUnderCap,
+  coinsToVirtualCash,
+  hasCashedOutBefore,
+  requiredCashoutMinimum,
+} from "@/lib/economy-config";
+import {
+  grantLocalPortalPlay,
+  noteLocalPortalMinutes,
+  type PortalSettleResult,
+} from "@/lib/portal-session";
 import {
   applyElapsedConversionPayouts,
   conversionProgressPercent,
@@ -22,16 +35,21 @@ import {
 } from "@/lib/conversion";
 import { APP_CONFIG } from "@/lib/app-config";
 import { getLocalAdStats, grantLocalAdReward } from "@/lib/ad-rewards-local";
+import { formatCash } from "@/lib/money";
+import {
+  loadPayoutDestination,
+  type PayoutMethod,
+} from "@/lib/payout-destination";
 import {
   cloudClaimDailyReward,
   cloudGrantAdReward,
   cloudGrantGameCoins,
+  cloudGrantPortalPlay,
   cloudRequestWithdrawal,
   fetchCloudWallet,
 } from "@/lib/wallet-api";
 
 const STORAGE_KEY = "play-earn-wallet-v1";
-const MIN_CASHOUT = APP_CONFIG.minCashoutVirtualDollars;
 
 export type TabId = "payouts" | "rewards" | "watchAd" | "games" | "custom";
 
@@ -59,11 +77,21 @@ type WalletContextValue = WalletState & {
   activeTab: TabId;
   setActiveTab: (tab: TabId) => void;
   addCoins: (gameId: GameId, amount: number) => Promise<void>;
+  grantPortalPlay: (portalId: PortalId, minutes: number) => Promise<PortalSettleResult>;
   grantAdReward: () => Promise<{ ok: boolean; message: string }>;
-  cashout: (paypalEmail?: string) => Promise<{ ok: boolean; message: string }>;
+  lastEarnNotice: string | null;
+  flashEarnNotice: (message: string) => void;
+  cashout: (options?: {
+    method?: PayoutMethod;
+    destination?: string;
+  }) => Promise<{ ok: boolean; message: string }>;
   claimDailyReward: (dayIndex: number, coins: number) => Promise<boolean>;
   conversionProgress: number;
   lastPayoutNotice: string | null;
+  pendingCash: number;
+  hasPriorCashout: boolean;
+  cashoutMinimum: number;
+  atCashCap: boolean;
   refreshWallet: () => Promise<void>;
 };
 
@@ -127,6 +155,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [activeTab, setActiveTab] = useState<TabId>("payouts");
   const [hydrated, setHydrated] = useState(false);
   const [lastPayoutNotice, setLastPayoutNotice] = useState<string | null>(null);
+  const [lastEarnNotice, setLastEarnNotice] = useState<string | null>(null);
+  const cashoutRef = useRef<(() => Promise<{ ok: boolean; message: string }>) | null>(
+    null,
+  );
 
   const refreshWallet = useCallback(async () => {
     if (!cloudActive) return;
@@ -180,7 +212,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setState((prev) => {
           const remaining = secondsUntilConversionDue(prev.conversionDueAt);
           if (remaining <= 0) {
-            void refreshWallet();
+            void (async () => {
+              await refreshWallet();
+              if (ECONOMY.autoCashoutOnConversion && loadPayoutDestination()) {
+                await cashoutRef.current?.();
+              }
+            })();
           }
           return { ...prev, secondsUntilConversion: remaining };
         });
@@ -199,16 +236,35 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         );
         if (applied.cashAdded > 0) {
           setLastPayoutNotice(
-            `3-hour payout: +${applied.cashAdded.toFixed(2)} added to your balance`,
+            applied.hitCashCap
+              ? `3-hour window: ${formatCash(applied.cashAdded)} ready. Balance capped at ${formatCash(ECONOMY.maxCashBalanceVirtualDollars)} — cash out to keep earning.`
+              : `3-hour window: ${formatCash(applied.cashAdded)} is ready to cash out`,
+          );
+        } else if (applied.hitCashCap) {
+          setLastPayoutNotice(
+            `Ready balance is capped at ${formatCash(ECONOMY.maxCashBalanceVirtualDollars)}. Cash out to unlock more earnings.`,
           );
         }
-        return {
+        const nextState = {
           ...prev,
           coins: applied.coins,
           cashBalance: applied.cashBalance,
           conversionDueAt: applied.conversionDueAt,
           secondsUntilConversion: secondsUntilConversionDue(applied.conversionDueAt),
         };
+        const minNeeded = requiredCashoutMinimum(
+          hasCashedOutBefore(prev.withdrawals),
+        );
+        if (
+          ECONOMY.autoCashoutOnConversion &&
+          applied.cashBalance >= Math.max(minNeeded, 0.0001) &&
+          loadPayoutDestination()
+        ) {
+          window.setTimeout(() => {
+            void cashoutRef.current?.();
+          }, 0);
+        }
+        return nextState;
       });
     }, 1000);
     return () => window.clearInterval(id);
@@ -252,39 +308,110 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     [cloudActive, refreshWallet],
   );
 
-  const cashout = useCallback(async (paypalEmail?: string) => {
-    if (cloudActive) {
-      const result = await cloudRequestWithdrawal(paypalEmail);
-      await refreshWallet();
+  const grantPortalPlay = useCallback(
+    async (portalId: PortalId, minutes: number): Promise<PortalSettleResult> => {
+      if (cloudActive) {
+        try {
+          const result = await cloudGrantPortalPlay(portalId, minutes);
+          if (result.ok && result.minutesGranted > 0) {
+            noteLocalPortalMinutes(result.minutesGranted);
+          }
+          await refreshWallet();
+          if (result.message) setLastEarnNotice(result.message);
+          return result;
+        } catch {
+          const failed: PortalSettleResult = {
+            ok: false,
+            portalId,
+            minutesGranted: 0,
+            coinsGranted: 0,
+            minutesRemainingToday: 0,
+            message:
+              "Arcade portal rewards need a database update. Coins were not added.",
+          };
+          setLastEarnNotice(failed.message);
+          return failed;
+        }
+      }
+      const result = grantLocalPortalPlay(portalId, minutes);
+      if (result.ok && result.coinsGranted > 0) {
+        setState((prev) => ({ ...prev, coins: prev.coins + result.coinsGranted }));
+      }
+      setLastEarnNotice(result.message);
       return result;
-    }
-    if (state.cashBalance < MIN_CASHOUT) {
-      return {
-        ok: false,
-        message: `Minimum balance is $${MIN_CASHOUT.toFixed(2)} virtual. Watch ads or play games to earn more!`,
-      };
-    }
-    const amount = state.cashBalance;
-    setState((prev) => ({
-      ...prev,
-      cashBalance: 0,
-      withdrawals: [
-        {
-          id: crypto.randomUUID(),
-          amount,
-          status: "pending",
-          createdAt: new Date().toISOString(),
-        },
-        ...prev.withdrawals,
-      ],
-    }));
-    return {
-      ok: true,
-      message: APP_CONFIG.realMoneyPayoutsEnabled
-        ? `Withdrawal of $${amount.toFixed(2)} submitted for processing.`
-        : `Virtual ledger entry for $${amount.toFixed(2)} (not real money).`,
-    };
-  }, [cloudActive, refreshWallet, state.cashBalance]);
+    },
+    [cloudActive, refreshWallet],
+  );
+
+  const cashout = useCallback(
+    async (options?: { method?: PayoutMethod; destination?: string }) => {
+      const saved = loadPayoutDestination();
+      const method = options?.method ?? saved?.method ?? "paypal";
+      const destination = (options?.destination ?? saved?.destination ?? "").trim();
+
+      if (!destination) {
+        return {
+          ok: false,
+          message: "Add a PayPal email or Cash App $Cashtag first.",
+        };
+      }
+
+      const priorCashout = hasCashedOutBefore(state.withdrawals);
+      const minCashout = requiredCashoutMinimum(priorCashout);
+
+      if (cloudActive) {
+        const result = await cloudRequestWithdrawal({
+          method,
+          destination,
+          minAmount: minCashout,
+        });
+        await refreshWallet();
+        if (result.ok) setLastPayoutNotice(result.message);
+        return result;
+      }
+
+      if (state.cashBalance <= 0) {
+        return {
+          ok: false,
+          message: "No cashable balance yet. Earn until the next 3-hour window.",
+        };
+      }
+      if (state.cashBalance < minCashout) {
+        return {
+          ok: false,
+          message: priorCashout
+            ? `Minimum balance is ${formatCash(minCashout)}.`
+            : `First cashout needs ${formatCash(minCashout)}. After that, any amount is fine.`,
+        };
+      }
+
+      const amount = state.cashBalance;
+      setState((prev) => ({
+        ...prev,
+        cashBalance: 0,
+        withdrawals: [
+          {
+            id: crypto.randomUUID(),
+            amount,
+            status: "pending",
+            createdAt: new Date().toISOString(),
+          },
+          ...prev.withdrawals,
+        ],
+      }));
+      const label = method === "cashapp" ? "Cash App" : "PayPal";
+      const message = APP_CONFIG.realMoneyPayoutsEnabled
+        ? `Payout of ${formatCash(amount)} queued to ${label} (${destination}).`
+        : `Demo payout of ${formatCash(amount)} to ${label} (${destination}).`;
+      setLastPayoutNotice(message);
+      return { ok: true, message };
+    },
+    [cloudActive, refreshWallet, state.cashBalance, state.withdrawals],
+  );
+
+  useEffect(() => {
+    cashoutRef.current = () => cashout();
+  }, [cashout]);
 
   const claimDailyReward = useCallback(
     async (dayIndex: number, coins: number) => {
@@ -309,6 +436,26 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     [state.secondsUntilConversion],
   );
 
+  const pendingCash = useMemo(
+    () => coinsToVirtualCash(state.coins),
+    [state.coins],
+  );
+
+  const hasPriorCashout = useMemo(
+    () => hasCashedOutBefore(state.withdrawals),
+    [state.withdrawals],
+  );
+
+  const cashoutMinimum = useMemo(
+    () => requiredCashoutMinimum(hasPriorCashout),
+    [hasPriorCashout],
+  );
+
+  const atCashCap = useMemo(
+    () => cashRoomUnderCap(state.cashBalance) <= 0,
+    [state.cashBalance],
+  );
+
   const value = useMemo(
     () => ({
       ...state,
@@ -317,11 +464,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       activeTab,
       setActiveTab,
       addCoins,
+      grantPortalPlay,
       grantAdReward,
       cashout,
       claimDailyReward,
       conversionProgress,
       lastPayoutNotice,
+      lastEarnNotice,
+      flashEarnNotice: setLastEarnNotice,
+      pendingCash,
+      hasPriorCashout,
+      cashoutMinimum,
+      atCashCap,
       refreshWallet,
     }),
     [
@@ -330,11 +484,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       mode,
       activeTab,
       addCoins,
+      grantPortalPlay,
       grantAdReward,
       cashout,
       claimDailyReward,
       conversionProgress,
       lastPayoutNotice,
+      lastEarnNotice,
+      pendingCash,
+      hasPriorCashout,
+      cashoutMinimum,
+      atCashCap,
       refreshWallet,
     ],
   );

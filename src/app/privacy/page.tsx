@@ -5,50 +5,68 @@ export default function PrivacyPage() {
   return (
     <LegalDocument title="Privacy Policy">
       <p>
-        {APP_CONFIG.name} (“we”, “our”, “the app”) is an entertainment application with
-        virtual rewards. This policy explains what information is processed when you use
-        the Android app distributed on Google Play.
+        {APP_CONFIG.name} (“we”, “our”, “the app”) is a mobile entertainment rewards
+        application. This policy explains what information is processed when you use the
+        app on Google Play, the web, or related sites.
       </p>
 
       <h2 className="mt-6 text-base font-bold">Summary</h2>
       <ul className="mt-2 list-disc space-y-1 pl-5">
         <li>We do not sell your personal information.</li>
-        <li>Gameplay progress is stored locally on your device by default.</li>
-        <li>We do not require an account, email, or phone number to play.</li>
+        <li>An account is required to sync balances and request real payouts.</li>
         <li>We do not collect precise location.</li>
+        <li>Ad partners may process advertising identifiers on Android.</li>
       </ul>
 
       <h2 className="mt-6 text-base font-bold">Information we process</h2>
       <p className="mt-2">
-        <strong>Account (optional):</strong> If you create an account, we process your email
-        address and authentication tokens through our database provider (Supabase) to sync
-        your virtual balances and purchase history.
+        <strong>Account:</strong> If you sign in (for example with Google), we process your
+        email address, display name/avatar if provided by the provider, and authentication
+        tokens through our backend provider (Supabase) to secure your wallet and payouts.
       </p>
       <p className="mt-2">
-        <strong>On-device app data:</strong> When you are not signed in, virtual balances and
-        progress may be stored only on your device. Signed-in users also store gameplay state
-        in the cloud.
+        <strong>Wallet &amp; activity:</strong> Virtual balances, conversion timers, reward
+        claims, withdrawal requests, and related ledger events are stored so we can operate
+        the rewards program and detect abuse.
       </p>
       <p className="mt-2">
-        <strong>Payments:</strong> If you buy coin packs, PayPal processes payment according to
-        PayPal&apos;s privacy policy. We receive purchase metadata (pack size, amount, user id)
-        to credit virtual coins.
+        <strong>Payout destinations:</strong> If you cash out, we process the PayPal email or
+        Cash App $Cashtag you provide to send or queue a payout.
       </p>
       <p className="mt-2">
-        <strong>Support:</strong> If you email support, we receive what you choose to send.
+        <strong>Payments:</strong> Optional coin-pack purchases are processed by PayPal under
+        PayPal&apos;s privacy policy. We receive purchase metadata needed to credit virtual
+        value.
+      </p>
+      <p className="mt-2">
+        <strong>Support:</strong> If you email us, we receive whatever you choose to send.
+      </p>
+      <p className="mt-2">
+        <strong>On-device data:</strong> Some preferences and local progress may be stored on
+        your device when you are not signed in.
       </p>
 
       <h2 className="mt-6 text-base font-bold">Advertising</h2>
       <p className="mt-2">
-        The Android app may show rewarded video ads through Unity LevelPlay. Ad partners may
-        process advertising identifiers according to their policies. We do not receive your
-        payment card data from ad views.
+        The Android app may show rewarded and interstitial ads through Unity LevelPlay / Unity
+        Ads and related partners. Those partners may process advertising identifiers and device
+        signals according to their policies. We do not receive your payment card data from ad
+        views.
       </p>
 
-      <h2 className="mt-6 text-base font-bold">Information we do not collect</h2>
+      <h2 className="mt-6 text-base font-bold">How we use information</h2>
+      <ul className="mt-2 list-disc space-y-1 pl-5">
+        <li>Operate accounts, wallets, and payouts</li>
+        <li>Prevent fraud, multi-accounting, and reward abuse</li>
+        <li>Provide support and service announcements</li>
+        <li>Comply with law and enforce our Terms</li>
+      </ul>
+
+      <h2 className="mt-6 text-base font-bold">Sharing</h2>
       <p className="mt-2">
-        Without a cloud account, gameplay balances are not transmitted to our servers. We do
-        not use third-party analytics SDKs in this project.
+        We share data with service providers who help run the app (for example Supabase,
+        PayPal, Cash App processing partners if used, and ad networks). We may disclose
+        information if required by law or to protect users and the service.
       </p>
 
       <h2 className="mt-6 text-base font-bold">Children</h2>
@@ -59,16 +77,16 @@ export default function PrivacyPage() {
 
       <h2 className="mt-6 text-base font-bold">Your choices</h2>
       <p className="mt-2">
-        You can delete on-device data at any time from the Custom tab → “Delete app data”, or
-        by clearing storage for the app in Android Settings, or by uninstalling the app.
+        You can sign out, delete on-device data from Profile, clear app storage in Android
+        Settings, or uninstall. To request deletion of cloud account data, email{" "}
+        <a href={`mailto:${APP_CONFIG.supportEmail}`}>{APP_CONFIG.supportEmail}</a> from your
+        account email.
       </p>
 
       <h2 className="mt-6 text-base font-bold">Contact</h2>
       <p className="mt-2">
-        Questions about this policy:{" "}
-        <a className="text-sky-700 underline" href={`mailto:${APP_CONFIG.supportEmail}`}>
-          {APP_CONFIG.supportEmail}
-        </a>
+        Privacy questions:{" "}
+        <a href={`mailto:${APP_CONFIG.supportEmail}`}>{APP_CONFIG.supportEmail}</a>
       </p>
     </LegalDocument>
   );

@@ -14,6 +14,7 @@ import { ComplianceOnboarding } from "@/components/play-earn/compliance-onboardi
 import { getOnboarding } from "@/lib/compliance";
 import { APP_CONFIG } from "@/lib/app-config";
 import { NativeShell } from "@/components/play-earn/native-shell";
+import { PortalPlayListener } from "@/components/play-earn/portal-play-listener";
 
 function PlayEarnShell() {
   const { activeTab, mode } = useWallet();
@@ -26,14 +27,14 @@ function PlayEarnShell() {
   }, []);
 
   return (
-    <div className="min-h-full bg-gradient-to-b from-sky-100 via-slate-50 to-slate-100 pt-[env(safe-area-inset-top)]">
+    <div className="min-h-full bg-[#070714] pt-[env(safe-area-inset-top)] text-white">
       <div className="mx-auto min-h-full max-w-md px-3 pb-24 pt-4">
         <PayPalReturnHandler />
         <header className="mb-4 text-center">
-          <h1 className="text-lg font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-lg font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-fuchsia-300 to-lime-300 drop-shadow-[0_0_18px_rgba(232,121,249,0.45)]">
             {APP_CONFIG.name}
           </h1>
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-violet-200/70">
             {mode === "cloud" ? "Cloud save · signed in" : "On-device save · sign in to sync"}
           </p>
         </header>
@@ -57,6 +58,7 @@ export function PlayEarnApp() {
     <AuthProvider>
       <WalletProvider>
         <NativeShell />
+        <PortalPlayListener />
         <PlayEarnShell />
       </WalletProvider>
     </AuthProvider>

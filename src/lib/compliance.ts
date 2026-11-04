@@ -1,8 +1,9 @@
-const ONBOARDING_KEY = "play-earn-onboarding-v1";
+const ONBOARDING_KEY = "play-earn-onboarding-v2";
 
 export type OnboardingRecord = {
   acceptedTermsAt: string;
   confirmedAge: boolean;
+  seenRulesAt: string;
 };
 
 export function getOnboarding(): OnboardingRecord | null {
@@ -10,7 +11,11 @@ export function getOnboarding(): OnboardingRecord | null {
   try {
     const raw = localStorage.getItem(ONBOARDING_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as OnboardingRecord;
+    const parsed = JSON.parse(raw) as OnboardingRecord;
+    if (!parsed.acceptedTermsAt || !parsed.confirmedAge || !parsed.seenRulesAt) {
+      return null;
+    }
+    return parsed;
   } catch {
     return null;
   }

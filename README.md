@@ -67,10 +67,11 @@ npm run android:open    # Android Studio
 
 ## Compliance features
 
-- First-launch age + Terms/Privacy acceptance
-- In-app Privacy Policy and Terms (`/privacy/`, `/terms/`)
+- First-launch rules walkthrough + age / Terms / Privacy checkboxes
+- Legal pages: Privacy, Terms, FAQ, Rules, Contact
+- Sign-in Terms checkbox + cashout payout confirmation checkbox
 - Profile → **Delete all data on device** (local storage wipe)
-- No third-party analytics or ad SDKs in this build
+- Google sign-in (recommended) with optional email backup
 
 ## Stack
 

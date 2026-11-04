@@ -10,8 +10,11 @@ Recommended order:
 
 1. Create a project at [supabase.com](https://supabase.com).
 2. Run all SQL files in `supabase/migrations/` in order in the SQL editor.
-3. Enable **Email** auth under Authentication → Providers.
-4. Add to `.env.local`:
+3. Enable auth providers under Authentication → Providers:
+   - **Google** (recommended for Android) — create OAuth credentials in Google Cloud, add authorized redirect URI `https://YOUR_PROJECT.supabase.co/auth/v1/callback`, paste Client ID/Secret into Supabase Google provider.
+   - Optional: **Email** as a backup (keep Confirm email on for production).
+4. In Authentication → URL Configuration, add your site URL (GitHub Pages / localhost) to **Redirect URLs**.
+5. Add to `.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co

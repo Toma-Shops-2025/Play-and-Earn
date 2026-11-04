@@ -14,7 +14,7 @@ keytool -genkeypair -alias play-earn-upload -keyalg RSA -keysize 2048 -validity 
 ```
 
 4. Copy `android/keystore.properties.example` → `android/keystore.properties` and fill in paths/passwords.
-5. Wire signing into Gradle (Android Studio: **Build → Generate Signed Bundle** is the easiest path).
+   Gradle reads that file automatically for `bundleRelease`. Do not commit `keystore.properties` or the `.keystore` file.
 
 ## Build web assets and sync Android
 
@@ -43,14 +43,15 @@ npm run android:open
 
 ## Command-line AAB (after signing config)
 
-```bash
-cd android
-./gradlew bundleRelease
+PowerShell from the repo root:
+
+```powershell
+.\build-apk.ps1 -Bundle
 ```
 
 Output: `android/app/build/outputs/bundle/release/app-release.aab`
 
-Upload that file to Play Console **Internal testing** first.
+Upload that file to Play Console **Internal testing** first, then closed testing.
 
 ## Versioning
 

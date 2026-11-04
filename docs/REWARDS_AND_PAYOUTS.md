@@ -18,11 +18,11 @@ Tunables live in **`src/lib/economy-config.ts`**. Planning math is in **`MONETIZ
 
 **How this app works today**
 
-1. Users earn **coins** (games, ads, daily streak).
-2. Every **3 hours**, coins convert to **withdrawal balance** using `coinsPerVirtualDollar` (default **2,500 coins = $1.00**).
-3. **Cashout** is a separate step (min **$25** by default) — not automatic PayPal every 3 hours.
+1. Users earn **coins** (games, ads, daily streak) — UI shows **money only**.
+2. Every **3 hours**, coins convert to **ready balance** using `coinsPerVirtualDollar` (default **2,500 coins = $1.00**), capped at **`$25`** until they cash out.
+3. **First cashout** needs **`$5`**; after that, **any amount**. With a saved PayPal / Cash App destination, conversion can auto-queue a payout.
 
-The **3-hour timer** grows **balance**; **real PayPal** (when enabled) runs when the user **requests withdrawal** and your payout worker sends it.
+The **3-hour timer** moves earnings to ready balance; **real PayPal** (when automation is on) sends when a withdrawal is queued.
 
 ---
 
@@ -32,7 +32,7 @@ The **3-hour timer** grows **balance**; **real PayPal** (when enabled) runs when
 
 - Best fit for **variable amounts** (whatever balance they cash out).
 - Automated via **`process-pending-payouts`** + user’s PayPal email.
-- Fees and fraud review are on you; use **$25+ minimum** and **payouts off** until you have data.
+- Fees and fraud review are on you; first-cashout **$5** + **$25** ready-balance cap help limit drain — keep payouts off until you have data if needed.
 
 ### Cash App
 

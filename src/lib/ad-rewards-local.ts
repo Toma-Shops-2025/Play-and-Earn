@@ -1,4 +1,5 @@
 import { REWARDED_AD_CONFIG } from "@/lib/ads-config";
+import { formatSignedRewardFromCoins } from "@/lib/money";
 
 const STORAGE_KEY = "play-earn-ad-rewards-v1";
 
@@ -50,7 +51,7 @@ export function grantLocalAdReward(): {
   save(record);
   return {
     ok: true,
-    message: `+${REWARDED_AD_CONFIG.coinsPerAd} coins added for watching an ad.`,
+    message: `${formatSignedRewardFromCoins(REWARDED_AD_CONFIG.coinsPerAd)} added for watching an ad.`,
     coinsGranted: REWARDED_AD_CONFIG.coinsPerAd,
   };
 }

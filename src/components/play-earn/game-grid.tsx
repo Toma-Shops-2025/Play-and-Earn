@@ -40,7 +40,7 @@ export function GameGrid({ compact = false }: { compact?: boolean }) {
 
   return (
     <>
-      <p className="text-center text-[11px] text-slate-500">
+      <p className="text-center text-[11px] text-violet-200/65">
         A short ad may play every {ECONOMY.gamesBetweenInterstitials} mini-games (Android).
       </p>
       <div

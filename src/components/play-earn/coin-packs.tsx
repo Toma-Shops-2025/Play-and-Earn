@@ -1,5 +1,6 @@
 "use client";
 
+import { Capacitor } from "@capacitor/core";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-provider";
@@ -11,6 +12,11 @@ export function CoinPacks() {
   const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<CoinPackId | null>(null);
+
+  // Play requires Google Play Billing for digital goods on Android.
+  if (Capacitor.isNativePlatform()) {
+    return null;
+  }
 
   if (!isPayPalConfigured()) {
     return (

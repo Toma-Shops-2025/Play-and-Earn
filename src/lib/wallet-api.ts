@@ -1,8 +1,10 @@
 import type { GameId } from "@/lib/games";
+import type { PortalId } from "@/lib/portals";
 import { REWARDED_AD_CONFIG } from "@/lib/ads-config";
 import { APP_CONFIG } from "@/lib/app-config";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Withdrawal } from "@/context/wallet-provider";
+import type { PortalSettleResult } from "@/lib/portal-session";
 
 export type CloudWalletPayload = {
   uid: number;
@@ -93,6 +95,36 @@ export async function cloudGrantAdReward(): Promise<AdRewardResult> {
   };
 }
 
+export async function cloudGrantPortalPlay(
+  portalId: PortalId,
+  minutes: number,
+): Promise<PortalSettleResult> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    throw new Error("Sign in to claim arcade-portal rewards in the cloud.");
+  }
+  const { data, error } = await supabase.rpc("grant_portal_play", {
+    p_portal_id: portalId,
+    p_minutes: minutes,
+  });
+  if (error) throw error;
+  const result = data as {
+    ok: boolean;
+    message: string;
+    coinsGranted?: number;
+    minutesGranted?: number;
+    minutesRemainingToday?: number;
+  };
+  return {
+    ok: Boolean(result.ok),
+    portalId,
+    minutesGranted: Number(result.minutesGranted ?? 0),
+    coinsGranted: Number(result.coinsGranted ?? 0),
+    minutesRemainingToday: Number(result.minutesRemainingToday ?? 0),
+    message: result.message,
+  };
+}
+
 export async function cloudGrantGameCoins(
   gameId: GameId,
   amount: number,
@@ -120,7 +152,12 @@ export async function cloudClaimDailyReward(
   return Boolean(data);
 }
 
-export async function cloudRequestWithdrawal(paypalEmail?: string): Promise<{
+export async function cloudRequestWithdrawal(options?: {
+  method?: "paypal" | "cashapp";
+  destination?: string;
+  /** Client hint — server also enforces first-cashout vs later minimum. */
+  minAmount?: number;
+}): Promise<{
   ok: boolean;
   message: string;
 }> {
@@ -128,9 +165,14 @@ export async function cloudRequestWithdrawal(paypalEmail?: string): Promise<{
   if (!supabase) {
     return { ok: false, message: "Sign in to request a withdrawal." };
   }
+  const destination = options?.destination?.trim() || null;
+  const method = options?.method ?? "paypal";
   const { data, error } = await supabase.rpc("request_withdrawal", {
-    p_min_amount: APP_CONFIG.minCashoutVirtualDollars,
-    p_paypal_email: paypalEmail?.trim() || null,
+    p_min_amount:
+      options?.minAmount ?? APP_CONFIG.minCashoutVirtualDollars,
+    p_paypal_email: method === "paypal" ? destination : null,
+    p_payout_method: method,
+    p_payout_destination: destination,
   });
   if (error) throw error;
   const result = data as { ok: boolean; message: string };

@@ -1,4 +1,9 @@
-import { ECONOMY, coinsToVirtualCash } from "@/lib/economy-config";
+import {
+  ECONOMY,
+  cashRoomUnderCap,
+  coinsToVirtualCash,
+  virtualCashToCoins,
+} from "@/lib/economy-config";
 
 export const CONVERSION_INTERVAL_MS =
   ECONOMY.conversionIntervalHours * 60 * 60 * 1000;
@@ -25,11 +30,13 @@ export type ConversionTickResult = {
   conversionDueAt: string;
   cashAdded: number;
   payoutCount: number;
+  hitCashCap: boolean;
 };
 
 /**
- * Applies every elapsed 3-hour payout window (screenshot-style auto conversion).
- * Converts all coins to cash on each window where coins > 0; always advances the timer.
+ * Applies every elapsed 3-hour payout window.
+ * Converts pending coins into ready cash, but never past maxCashBalanceVirtualDollars.
+ * Leftover coins stay pending until the user cashes out and frees room under the cap.
  */
 export function applyElapsedConversionPayouts(
   coins: number,
@@ -45,14 +52,23 @@ export function applyElapsedConversionPayouts(
   }
   let cashAdded = 0;
   let payoutCount = 0;
+  let hitCashCap = false;
 
   while (dueAt <= now) {
     payoutCount += 1;
-    if (nextCoins > 0) {
-      const added = coinsToVirtualCash(nextCoins);
-      cashAdded += added;
-      nextCash += added;
-      nextCoins = 0;
+    const room = cashRoomUnderCap(nextCash);
+    if (nextCoins > 0 && room > 0) {
+      const roomCoins = virtualCashToCoins(room);
+      const convertCoins = Math.min(nextCoins, roomCoins);
+      if (convertCoins > 0) {
+        const added = coinsToVirtualCash(convertCoins);
+        cashAdded += added;
+        nextCash += added;
+        nextCoins -= convertCoins;
+      }
+    }
+    if (nextCoins > 0 && cashRoomUnderCap(nextCash) <= 0) {
+      hitCashCap = true;
     }
     dueAt += CONVERSION_INTERVAL_MS;
   }
@@ -63,5 +79,6 @@ export function applyElapsedConversionPayouts(
     conversionDueAt: new Date(dueAt).toISOString(),
     cashAdded,
     payoutCount,
+    hitCashCap,
   };
 }

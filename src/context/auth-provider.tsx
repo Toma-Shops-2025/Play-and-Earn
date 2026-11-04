@@ -12,6 +12,7 @@ import {
 import type { Session, User } from "@supabase/supabase-js";
 import { getSupabase } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { SITE_URL } from "@/lib/site-url";
 
 type AuthContextValue = {
   enabled: boolean;
@@ -20,10 +21,16 @@ type AuthContextValue = {
   user: User | null;
   signUp: (email: string, password: string) => Promise<string | null>;
   signIn: (email: string, password: string) => Promise<string | null>;
+  signInWithGoogle: () => Promise<string | null>;
   signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+function oauthRedirectTo(): string {
+  if (typeof window === "undefined") return `${SITE_URL}/`;
+  return `${window.location.origin}${window.location.pathname}`;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const enabled = isSupabaseConfigured();
@@ -65,6 +72,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return error?.message ?? null;
   }, []);
 
+  const signInWithGoogle = useCallback(async () => {
+    const supabase = getSupabase();
+    if (!supabase) return "Backend auth is not configured.";
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: oauthRedirectTo(),
+        queryParams: {
+          prompt: "select_account",
+        },
+      },
+    });
+    return error?.message ?? null;
+  }, []);
+
   const signOut = useCallback(async () => {
     const supabase = getSupabase();
     if (!supabase) return;
@@ -79,9 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: session?.user ?? null,
       signUp,
       signIn,
+      signInWithGoogle,
       signOut,
     }),
-    [enabled, loading, session, signUp, signIn, signOut],
+    [enabled, loading, session, signUp, signIn, signInWithGoogle, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

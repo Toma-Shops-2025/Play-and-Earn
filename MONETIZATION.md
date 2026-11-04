@@ -13,6 +13,7 @@ All tunables live in **`src/lib/economy-config.ts`**.
 | Cashout threshold | **$25 virtual** | Fewer withdrawal requests; more time to monetize with ads |
 | Rewarded ads | **10 coins × 25/day** | More impressions; slightly lower coins per view |
 | Mini-games | **30 plays/game/day**, max **8** coins/grant | Cuts farming vs unlimited faucet |
+| Y8 / Crazy Games | **2 coins/min**, max **20 min/session**, **40 min/day** | Retention only — we do not earn their ads |
 | Daily streak | **4…20** coins (7 days) | Login bonus without dominating ad value |
 
 After Supabase migrations, run **`20260322000003_profitable_economy.sql`** so server rules match the client.

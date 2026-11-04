@@ -23,8 +23,8 @@ Use this after you build a signed **Android App Bundle (`.aab`)** from this repo
 
 Copy from [store-listing-en-US.md](./store-listing-en-US.md). You still need:
 
-- **App icon:** 512×512 PNG (use `assets/icon-only.png` resized)
-- **Feature graphic:** 1024×500 PNG
+- **App icon:** 512×512 PNG — `play-store/icon-512.png`
+- **Feature graphic:** 1024×500 PNG — `play-store/feature-graphic.png`
 - **Phone screenshots:** at least 2 (capture from Android emulator or device)
 - **Category:** Casual (or Entertainment)
 

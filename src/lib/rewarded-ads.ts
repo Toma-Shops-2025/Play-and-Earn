@@ -1,5 +1,6 @@
 import { registerPlugin } from "@capacitor/core";
 import { REWARDED_AD_CONFIG } from "@/lib/ads-config";
+import { formatSignedRewardFromCoins } from "@/lib/money";
 
 export type RewardedAdResult = {
   rewarded: boolean;
@@ -44,7 +45,7 @@ export async function showRewardedAdWithFallback(): Promise<RewardedAdResult> {
 }
 
 export function formatAdRewardLabel(): string {
-  return `+${REWARDED_AD_CONFIG.coinsPerAd} coins`;
+  return formatSignedRewardFromCoins(REWARDED_AD_CONFIG.coinsPerAd);
 }
 
 export async function showInterstitialWithFallback(): Promise<InterstitialAdResult> {

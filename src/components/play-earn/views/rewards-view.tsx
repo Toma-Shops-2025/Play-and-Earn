@@ -9,11 +9,12 @@ import {
 } from "@/lib/daily-ad-gate";
 import { showRewardedAdWithFallback } from "@/lib/rewarded-ads";
 import { useWallet } from "@/context/wallet-provider";
+import { formatCash, formatSignedRewardFromCoins } from "@/lib/format";
 
 const WEEKLY_REWARDS = ECONOMY.dailyStreakCoins;
 
 export function RewardsView() {
-  const { claimedRewardDays, claimDailyReward, coins } = useWallet();
+  const { claimedRewardDays, claimDailyReward, pendingCash } = useWallet();
   const [dailyAdUnlocked, setDailyAdUnlocked] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -37,7 +38,7 @@ export function RewardsView() {
       }
       setDailyAdGateForToday();
       setDailyAdUnlocked(true);
-      setMessage("Unlocked! Tap Claim to collect your streak coins.");
+      setMessage("Unlocked! Tap Claim to collect today’s cash bonus.");
     } finally {
       setBusy(false);
     }
@@ -45,18 +46,18 @@ export function RewardsView() {
 
   return (
     <div className="space-y-4">
-      <section className="rounded-3xl bg-gradient-to-br from-fuchsia-500 to-violet-600 p-5 text-white shadow-lg">
+      <section className="rounded-3xl border border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-600 via-violet-700 to-indigo-800 p-5 text-white shadow-[0_0_36px_rgba(217,70,239,0.35)]">
         <h2 className="text-xl font-extrabold">Daily rewards</h2>
-        <p className="mt-1 text-sm text-white/85">
+        <p className="mt-1 text-sm text-fuchsia-50/90">
           {requiresAd
-            ? "Watch one rewarded video, then claim today’s streak bonus."
-            : "Check in each day to stack bonus coins."}{" "}
-          You have <span className="font-bold">{coins}</span> coins right now.
+            ? "Watch one rewarded video, then claim today’s streak cash."
+            : "Check in each day to stack bonus cash."}{" "}
+          Pending: <span className="font-bold text-lime-300">{formatCash(pendingCash)}</span>
         </p>
       </section>
 
       {message ? (
-        <p className="rounded-xl bg-white px-3 py-2 text-center text-sm text-slate-700 shadow-sm">
+        <p className="rounded-xl border border-cyan-400/20 bg-white/5 px-3 py-2 text-center text-sm text-cyan-100">
           {message}
         </p>
       ) : null}
@@ -71,11 +72,15 @@ export function RewardsView() {
             <div
               key={index}
               className={`rounded-2xl border p-3 text-center shadow-sm ${
-                isToday ? "border-lime-400 bg-lime-50" : "border-slate-200 bg-white"
+                isToday
+                  ? "border-lime-400/60 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.25)]"
+                  : "border-white/10 bg-white/5"
               }`}
             >
-              <p className="text-xs font-medium text-slate-500">Day {index + 1}</p>
-              <p className="mt-1 text-2xl font-extrabold text-slate-800">+{reward}</p>
+              <p className="text-xs font-medium text-violet-200/70">Day {index + 1}</p>
+              <p className="mt-1 text-lg font-extrabold text-lime-300">
+                {formatSignedRewardFromCoins(reward)}
+              </p>
               {needsAdFirst ? (
                 <Button
                   type="button"
@@ -103,8 +108,8 @@ export function RewardsView() {
       </div>
 
       {requiresAd && todayReward !== undefined && !claimedRewardDays.includes(todayIndex) ? (
-        <p className="text-center text-xs text-slate-500">
-          Today’s bonus: +{todayReward} coins after{" "}
+        <p className="text-center text-xs text-violet-200/70">
+          Today’s bonus: {formatSignedRewardFromCoins(todayReward)} after{" "}
           {dailyAdUnlocked ? "claiming" : "watching an ad"}.
         </p>
       ) : null}

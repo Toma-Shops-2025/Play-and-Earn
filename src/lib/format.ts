@@ -1,6 +1,4 @@
-export function formatCash(amount: number): string {
-  return `$${amount.toFixed(2)}`;
-}
+export { formatCash, formatRewardFromCoins, formatSignedRewardFromCoins } from "@/lib/money";
 
 export function formatCountdown(totalSeconds: number): string {
   const hours = Math.floor(totalSeconds / 3600);

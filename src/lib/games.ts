@@ -13,7 +13,7 @@ export const GAMES: GameConfig[] = [
   {
     id: "spin",
     title: "Lucky Spin",
-    subtitle: "Spin the wheel for coins",
+    subtitle: "Spin the wheel for cash",
     gradient: "from-sky-300 via-sky-400 to-blue-500",
     accent: "bg-sky-500",
     emoji: "🎡",

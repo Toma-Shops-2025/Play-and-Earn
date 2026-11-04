@@ -52,49 +52,48 @@ export function WatchAdView() {
 
   return (
     <div className="space-y-4">
-      <section className="rounded-3xl bg-gradient-to-br from-indigo-500 via-violet-600 to-fuchsia-600 p-6 text-white shadow-lg">
+      <section className="rounded-3xl border border-violet-400/30 bg-gradient-to-br from-indigo-600 via-violet-700 to-fuchsia-700 p-6 text-white shadow-[0_0_40px_rgba(139,92,246,0.4)]">
         <div className="flex items-center gap-3">
-          <PlayCircle className="h-10 w-10" strokeWidth={2.2} />
+          <PlayCircle className="h-10 w-10 text-lime-300" strokeWidth={2.2} />
           <div>
             <h2 className="text-xl font-extrabold">Watch &amp; earn</h2>
-            <p className="text-sm text-white/85">Unity LevelPlay rewarded videos</p>
+            <p className="text-sm text-fuchsia-100/85">Unity LevelPlay rewarded videos</p>
           </div>
         </div>
         <p className="mt-4 text-sm leading-relaxed text-white/90">
           Complete a short video to earn{" "}
-          <strong>{formatAdRewardLabel()}</strong> per view (recommended rate). Up to{" "}
-          <strong>{ECONOMY.rewardedAd.dailyLimit}</strong> videos per day — primary way the app
-          earns revenue.
+          <strong className="text-lime-300">{formatAdRewardLabel()}</strong> per view. Up to{" "}
+          <strong>{ECONOMY.rewardedAd.dailyLimit}</strong> videos per day — main cash engine.
         </p>
       </section>
 
-      <section className="rounded-2xl bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            <p className="text-xs font-medium uppercase tracking-wide text-violet-200/70">
               Today&apos;s progress
             </p>
-            <p className="mt-1 text-2xl font-extrabold text-slate-900 tabular-nums">
+            <p className="mt-1 text-2xl font-extrabold text-white tabular-nums">
               {adsWatchedToday} / {REWARDED_AD_CONFIG.dailyLimit}
             </p>
           </div>
-          <div className="rounded-2xl bg-lime-50 px-4 py-2 text-center">
-            <p className="text-[10px] font-semibold uppercase text-lime-800">Per ad</p>
-            <p className="text-lg font-extrabold text-lime-700">
-              +{REWARDED_AD_CONFIG.coinsPerAd}
+          <div className="rounded-2xl border border-lime-400/40 bg-lime-400/10 px-4 py-2 text-center">
+            <p className="text-[10px] font-semibold uppercase text-lime-200">Per ad</p>
+            <p className="text-lg font-extrabold text-lime-300">
+              {formatAdRewardLabel()}
             </p>
           </div>
         </div>
 
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/40">
           <div
-            className="h-full rounded-full bg-violet-500 transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-400 transition-all"
             style={{
               width: `${(adsWatchedToday / REWARDED_AD_CONFIG.dailyLimit) * 100}%`,
             }}
           />
         </div>
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-violet-200/65">
           {adsRemainingToday} rewarded {adsRemainingToday === 1 ? "video" : "videos"} left today
         </p>
 
@@ -108,13 +107,13 @@ export function WatchAdView() {
         </Button>
 
         {message ? (
-          <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-center text-sm text-slate-700">
+          <p className="mt-3 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-center text-sm text-cyan-100">
             {message}
           </p>
         ) : null}
 
         {cloudRequired && !user ? (
-          <p className="mt-3 flex items-start gap-2 text-xs text-amber-800">
+          <p className="mt-3 flex items-start gap-2 text-xs text-amber-200">
             <Sparkles className="mt-0.5 h-4 w-4 shrink-0" />
             Sign in under Profile so ad rewards are saved to your cloud wallet.
           </p>
@@ -122,15 +121,6 @@ export function WatchAdView() {
       </section>
 
       <MonetizationHint />
-
-      <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs leading-relaxed text-slate-600">
-        <p className="font-semibold text-slate-800">Monetization note</p>
-        <p className="mt-1">
-          Production Android builds use Unity LevelPlay. Configure your app key and rewarded ad
-          unit in <code className="text-[10px]">android/.../levelplay.xml</code>. See{" "}
-          <code className="text-[10px]">UNITY_ADS.md</code> in the repo.
-        </p>
-      </section>
     </div>
   );
 }

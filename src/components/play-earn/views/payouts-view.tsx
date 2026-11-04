@@ -3,7 +3,6 @@
 import { StatusBanner } from "@/components/play-earn/status-banner";
 import { WalletCard } from "@/components/play-earn/wallet-card";
 import { WithdrawalHistory } from "@/components/play-earn/withdrawal-history";
-import { GameGrid } from "@/components/play-earn/game-grid";
 import { SiteLegalFooter } from "@/components/legal/site-legal-footer";
 import { useWallet } from "@/context/wallet-provider";
 import { formatCash } from "@/lib/format";
@@ -16,7 +15,6 @@ export function PayoutsView() {
       <StatusBanner />
       <WalletCard />
       <WithdrawalHistory />
-      <GameGrid compact />
 
       {withdrawals.length > 0 ? (
         <section

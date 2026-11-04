@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AuthPanel } from "@/components/auth/auth-panel";
-import { CoinPacks } from "@/components/play-earn/coin-packs";
 import { SiteLegalFooter } from "@/components/legal/site-legal-footer";
 import { APP_CONFIG } from "@/lib/app-config";
 import { clearAllAppData } from "@/lib/compliance";
@@ -87,7 +86,6 @@ export function CustomView() {
       </section>
 
       <AuthPanel />
-      <CoinPacks />
 
       <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
         <h3 className="text-sm font-bold text-cyan-100">Legal &amp; help</h3>

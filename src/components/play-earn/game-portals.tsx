@@ -16,7 +16,9 @@ import { formatSignedRewardFromCoins } from "@/lib/format";
 
 export function GamePortals() {
   const { lastEarnNotice } = useWallet();
-  const [remaining, setRemaining] = useState(ECONOMY.portalPlay.maxMinutesPerDay);
+  const [remaining, setRemaining] = useState<number>(
+    ECONOMY.portalPlay.maxMinutesPerDay,
+  );
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {

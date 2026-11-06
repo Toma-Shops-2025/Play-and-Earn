@@ -6,14 +6,14 @@ import { useWallet } from "@/context/wallet-provider";
 import { formatSignedRewardFromCoins, randomInt } from "@/lib/format";
 
 const SEGMENTS = [
-  { label: "+1", coins: 1, color: "#38bdf8" },
-  { label: "+2", coins: 2, color: "#a78bfa" },
-  { label: "+3", coins: 3, color: "#f472b6" },
-  { label: "+2", coins: 2, color: "#fbbf24" },
-  { label: "+1", coins: 1, color: "#34d399" },
-  { label: "+4", coins: 4, color: "#fb7185" },
-  { label: "+2", coins: 2, color: "#60a5fa" },
-  { label: "+1", coins: 1, color: "#c084fc" },
+  { coins: 1, color: "#38bdf8" },
+  { coins: 2, color: "#a78bfa" },
+  { coins: 3, color: "#f472b6" },
+  { coins: 2, color: "#fbbf24" },
+  { coins: 1, color: "#34d399" },
+  { coins: 4, color: "#fb7185" },
+  { coins: 2, color: "#60a5fa" },
+  { coins: 1, color: "#c084fc" },
 ] as const;
 
 const SIZE = 220;
@@ -122,7 +122,7 @@ export function LuckySpin({ onClose }: { onClose: () => void }) {
                   const mid = i * (360 / SEGMENTS.length) + 360 / SEGMENTS.length / 2;
                   const label = polar(CX, CY, LABEL_R, mid);
                   return (
-                    <g key={`${seg.label}-${i}`}>
+                    <g key={`${seg.coins}-${i}`}>
                       <path
                         d={paths[i]}
                         fill={seg.color}
@@ -136,11 +136,11 @@ export function LuckySpin({ onClose }: { onClose: () => void }) {
                         textAnchor="middle"
                         dominantBaseline="middle"
                         fill="#0f172a"
-                        fontSize="16"
+                        fontSize="11"
                         fontWeight="800"
                         transform={`rotate(${mid}, ${label.x}, ${label.y})`}
                       >
-                        {seg.label}
+                        {formatSignedRewardFromCoins(seg.coins)}
                       </text>
                     </g>
                   );

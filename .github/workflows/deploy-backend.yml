@@ -34,7 +34,7 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          supabase functions deploy create-paypal-order
-          supabase functions deploy complete-paypal-order
-          supabase functions deploy paypal-webhook --no-verify-jwt
-          supabase functions deploy process-pending-payouts --no-verify-jwt
+          supabase functions deploy create-paypal-order --yes
+          supabase functions deploy complete-paypal-order --yes
+          supabase functions deploy paypal-webhook --no-verify-jwt --yes
+          supabase functions deploy process-pending-payouts --no-verify-jwt --yes

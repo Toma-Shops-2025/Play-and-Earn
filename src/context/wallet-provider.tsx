@@ -35,6 +35,11 @@ import {
 } from "@/lib/conversion";
 import { APP_CONFIG } from "@/lib/app-config";
 import { getLocalAdStats, grantLocalAdReward } from "@/lib/ad-rewards-local";
+import {
+  hasClaimedDailyStreakToday,
+  markDailyClaimedToday,
+} from "@/lib/daily-claim-date";
+import { hasDailyAdGateForToday } from "@/lib/daily-ad-gate";
 import { formatCash } from "@/lib/money";
 import {
   loadPayoutDestination,
@@ -415,12 +420,30 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const claimDailyReward = useCallback(
     async (dayIndex: number, coins: number) => {
+      const nextIndex = state.claimedRewardDays.length;
+      if (dayIndex !== nextIndex) return false;
+      if (hasClaimedDailyStreakToday()) return false;
+      if (
+        ECONOMY.dailyStreakRequiresRewardedAd &&
+        !hasDailyAdGateForToday()
+      ) {
+        return false;
+      }
+
       if (cloudActive) {
-        const ok = await cloudClaimDailyReward(dayIndex, coins);
-        if (ok) await refreshWallet();
-        return ok;
+        try {
+          const ok = await cloudClaimDailyReward(dayIndex, coins);
+          if (ok) {
+            markDailyClaimedToday();
+            await refreshWallet();
+          }
+          return ok;
+        } catch {
+          return false;
+        }
       }
       if (state.claimedRewardDays.includes(dayIndex)) return false;
+      markDailyClaimedToday();
       setState((prev) => ({
         ...prev,
         coins: prev.coins + coins,

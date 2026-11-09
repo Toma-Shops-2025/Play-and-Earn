@@ -19,11 +19,12 @@ export function formatSignedRewardFromCoins(coins: number): string {
   return `+${formatCash(cash)}`;
 }
 
-/** Daily streak tiles — show real progression (4→20 coins) instead of identical "+<$0.01". */
+/** Daily streak tiles — show progression (4→20 coins), not identical "+<$0.01". */
 export function formatSignedStreakReward(coins: number): string {
   const cash = coinsToVirtualCash(coins);
   if (cash >= 0.01) return `+${formatCash(cash)}`;
-  return `+$${cash.toFixed(3)}`;
+  const cents = cash * 100;
+  return `+${cents.toFixed(cents >= 1 ? 1 : 2)}¢`;
 }
 
 export function formatStreakRewardSubtitle(coins: number): string {

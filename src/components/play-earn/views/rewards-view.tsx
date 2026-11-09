@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ECONOMY } from "@/lib/economy-config";
+import { hasClaimedDailyStreakToday } from "@/lib/daily-claim-date";
 import {
   hasDailyAdGateForToday,
   setDailyAdGateForToday,
@@ -25,8 +26,12 @@ export function RewardsView() {
   const [message, setMessage] = useState<string | null>(null);
 
   const requiresAd = ECONOMY.dailyStreakRequiresRewardedAd;
-  const todayIndex = claimedRewardDays.length;
-  const todayReward = WEEKLY_REWARDS[todayIndex];
+  const streakDayIndex = claimedRewardDays.length;
+  const canClaimToday = !hasClaimedDailyStreakToday();
+  const todayIndex = canClaimToday ? streakDayIndex : -1;
+  const todayReward = WEEKLY_REWARDS[streakDayIndex];
+  const waitingUntilTomorrow =
+    !canClaimToday && streakDayIndex < WEEKLY_REWARDS.length;
 
   useEffect(() => {
     setDailyAdUnlocked(!requiresAd || hasDailyAdGateForToday());
@@ -76,6 +81,9 @@ export function RewardsView() {
         {WEEKLY_REWARDS.map((reward, index) => {
           const claimed = claimedRewardDays.includes(index);
           const isToday = index === todayIndex;
+          const isNextLockedUntilTomorrow =
+            waitingUntilTomorrow && index === streakDayIndex;
+          const isStreakFocus = isToday || isNextLockedUntilTomorrow;
           const needsAdFirst = requiresAd && isToday && !dailyAdUnlocked && !claimed;
           const isFinale = index === WEEKLY_REWARDS.length - 1;
 
@@ -83,7 +91,7 @@ export function RewardsView() {
             <div
               key={index}
               className={`rounded-2xl border p-3 text-center shadow-sm ${
-                isToday
+                isStreakFocus
                   ? "border-lime-400/60 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.25)]"
                   : isFinale
                     ? "border-amber-400/40 bg-amber-400/5"
@@ -123,10 +131,18 @@ export function RewardsView() {
                   type="button"
                   size="sm"
                   className="mt-2 w-full"
-                  disabled={claimed || !isToday || busy}
+                  disabled={
+                    claimed || !isToday || busy || isNextLockedUntilTomorrow
+                  }
                   onClick={() => void claimDailyReward(index, reward)}
                 >
-                  {claimed ? "Claimed" : isToday ? "Claim" : "Locked"}
+                  {claimed
+                    ? "Claimed"
+                    : isNextLockedUntilTomorrow
+                      ? "Tomorrow"
+                      : isToday
+                        ? "Claim"
+                        : "Locked"}
                 </Button>
               )}
             </div>
@@ -134,9 +150,19 @@ export function RewardsView() {
         })}
       </div>
 
-      {requiresAd && todayReward !== undefined && !claimedRewardDays.includes(todayIndex) ? (
+      {waitingUntilTomorrow ? (
+        <p className="text-center text-xs text-violet-200/80">
+          Today&apos;s streak is claimed. Day {streakDayIndex + 1} unlocks after
+          midnight UTC.
+        </p>
+      ) : null}
+
+      {requiresAd &&
+      todayReward !== undefined &&
+      canClaimToday &&
+      !claimedRewardDays.includes(streakDayIndex) ? (
         <p className="text-center text-xs text-violet-200/70">
-          Today’s bonus: {formatSignedStreakReward(todayReward)} (
+          Today&apos;s bonus: {formatSignedStreakReward(todayReward)} (
           {formatStreakRewardSubtitle(todayReward)}) after{" "}
           {dailyAdUnlocked ? "claiming" : "watching an ad"}.
         </p>

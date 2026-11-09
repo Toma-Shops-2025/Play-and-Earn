@@ -13,7 +13,7 @@ Use this before retesting production. Full repo wiring: **[GITHUB_SETUP_CHECKLIS
 | # | Task | Verify |
 |---|------|--------|
 | 1 | **Supabase DB** — all [10 migrations](./SUPABASE_MIGRATIONS.md) or `supabase/ALL_MIGRATIONS_IN_ORDER.sql` once | Table Editor: `profiles`, `ad_reward_claims`, `withdrawals`, … |
-| 2 | **Auth** — Email and/or Google; **Redirect URLs** include `https://toma-shops-2025.github.io/Play-and-Earn/**` and `http://localhost:43123/**` | Sign in on live site; “Cloud sync on” |
+| 2 | **Auth** — Email and/or Google; **Redirect URLs** include `https://toma-shops-2025.github.io/Play-and-Earn/**`, `http://localhost:43123/**`, and **`com.playearn.arcade://auth/callback`** (APK) | Web: “Cloud sync on”; APK: sign in returns to app ([NATIVE_GOOGLE_SIGNIN.md](./NATIVE_GOOGLE_SIGNIN.md)) |
 | 3 | **GitHub secrets** — `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **Deploy web** green; Profile not “Add Supabase keys…” |
 | 4 | **GitHub secrets** — `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF` (function deploys) | **Deploy Supabase backend** green or manual `supabase functions deploy` |
 

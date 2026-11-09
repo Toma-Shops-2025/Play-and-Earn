@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AuthDeepLinkHandler } from "@/components/auth/auth-deep-link";
 import { AuthProvider } from "@/context/auth-provider";
 import { WalletProvider, useWallet } from "@/context/wallet-provider";
 import { BottomNav } from "@/components/play-earn/bottom-nav";
@@ -56,6 +57,7 @@ function PlayEarnShell() {
 export function PlayEarnApp() {
   return (
     <AuthProvider>
+      <AuthDeepLinkHandler />
       <WalletProvider>
         <NativeShell />
         <PortalPlayListener />

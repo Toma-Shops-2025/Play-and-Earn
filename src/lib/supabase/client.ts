@@ -9,6 +9,7 @@ export function getSupabase(): SupabaseClient | null {
     const { url, anonKey } = getSupabaseConfig();
     client = createClient(url, anonKey, {
       auth: {
+        flowType: "pkce",
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,

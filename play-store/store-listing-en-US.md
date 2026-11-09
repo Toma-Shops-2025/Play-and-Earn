@@ -8,7 +8,7 @@ Virtual coin arcade: spin, slots, scratch cards, and daily rewards.
 
 Play N' Earn is a casual rewards app with virtual coins and balance tracking. Enjoy Lucky Spin, Lucky Slot, Scratch Card, and Flip Card mini-games, collect daily check-in rewards, and track your progress on a colorful mobile dashboard.
 
-**Important:** All coins and “cash” values are virtual and for fun only unless the publisher enables verified payouts. The app contains ads (rewarded video). This is not real-money gambling. Optional coin packs may be offered via the store.
+**Important:** Reward balances are virtual for entertainment unless the publisher enables verified payouts. The app contains ads (rewarded video). This is not real-money gambling. There is no in-app purchase store in the current build.
 
 Features:
 

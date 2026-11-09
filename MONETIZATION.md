@@ -1,6 +1,6 @@
 # Monetization & profitability
 
-This app makes money from **ads** (Unity LevelPlay) and optional **coin packs** (PayPal web / Play Billing on Android). You lose money if **real cash payouts** or **over-generous free coins** exceed that revenue.
+This app makes money from **ads** (Unity LevelPlay on Android). You lose money if **real cash payouts** or **over-generous free rewards** exceed that revenue. The app does **not** ship a coin-pack store; legacy PayPal checkout code exists only in the repo for optional future use.
 
 All tunables live in **`src/lib/economy-config.ts`**.
 
@@ -43,9 +43,7 @@ Update `planningRewardedEcpmUsd` monthly from **LevelPlay → Reports**.
 1. **Maximize rewarded ads** — “Watch Ad” tab, consider gating daily streak behind an optional ad (future).
 2. **Interstitials** — shown every `gamesBetweenInterstitials` mini-game opens (default **3**). Tune in `economy-config.ts`.
 3. **Daily streak** — requires one **rewarded** video before claim when `dailyStreakRequiresRewardedAd` is true.
-4. **Sell coin packs** on Android via **Google Play Billing** (required for in-app digital goods).
-5. **PayPal** for web / browser coin packs (already integrated); Play Billing on Android when required.
-6. **Do not enable real payouts** until:  
+4. **Do not enable real payouts** until:  
    `monthly_ad_revenue + iap_revenue > payouts + store_fees + infra + 30% buffer`
 
 ## When to enable real money

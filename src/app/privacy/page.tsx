@@ -34,9 +34,9 @@ export default function PrivacyPage() {
         Cash App $Cashtag you provide to send or queue a payout.
       </p>
       <p className="mt-2">
-        <strong>Payments:</strong> Optional coin-pack purchases are processed by PayPal under
-        PayPal&apos;s privacy policy. We receive purchase metadata needed to credit virtual
-        value.
+        <strong>Payouts:</strong> When you cash out and automatic payouts are enabled, payout
+        processing may use PayPal under PayPal&apos;s terms. We do not sell in-app coin packs in
+        the current app.
       </p>
       <p className="mt-2">
         <strong>Support:</strong> If you email us, we receive whatever you choose to send.

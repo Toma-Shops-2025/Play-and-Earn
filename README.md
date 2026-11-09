@@ -4,6 +4,7 @@ Mobile-style **virtual rewards** arcade (mini-games, wallet UI, daily check-ins)
 
 **Repository:** [github.com/Toma-Shops-2025/Play-and-Earn](https://github.com/Toma-Shops-2025/Play-and-Earn)  
 **Start here (GitHub + Supabase + PayPal + Play):** **[docs/GITHUB_SETUP_CHECKLIST.md](./docs/GITHUB_SETUP_CHECKLIST.md)**  
+**Retest / whatâ€™s required today:** **[docs/OPERATOR_CHECKLIST.md](./docs/OPERATOR_CHECKLIST.md)**  
 **Supabase DB (migrations):** **[docs/SUPABASE_MIGRATIONS.md](./docs/SUPABASE_MIGRATIONS.md)**
 
 ## Quick start (web preview)
@@ -29,9 +30,9 @@ Economy defaults and unit economics: **[MONETIZATION.md](./MONETIZATION.md)** â€
 
 Scheduled PayPal payouts, backend deploys, and what already runs on its own: **[AUTOMATION.md](./AUTOMATION.md)**.
 
-## Backend, auth & PayPal
+## Backend, auth & payouts
 
-Optional cloud accounts and PayPal coin packs: **[BACKEND_SETUP.md](./BACKEND_SETUP.md)**.
+Cloud accounts (Supabase) and optional PayPal **payout** automation: **[BACKEND_SETUP.md](./BACKEND_SETUP.md)**.
 
 Without `.env.local`, the app keeps using **on-device-only** demo mode.
 

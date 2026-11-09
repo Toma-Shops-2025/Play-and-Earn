@@ -1,33 +1,32 @@
-# Backend, auth & payments setup
+# Backend, auth & payouts setup
 
 Recommended order:
 
 1. **Supabase** — database + auth (source of truth for balances when signed in)
-2. **PayPal** — coin pack purchases (web / mobile browser)
-3. **Withdrawals** — virtual ledger in-app; real PayPal **Payouts** only when you enable ops (see MONETIZATION.md)
+2. **Optional** — automatic PayPal **Payouts** when you enable ops (see `MONETIZATION.md`, `AUTOMATION.md`)
+
+The shipped app does **not** sell coin packs. PayPal credentials are for the **payout worker**, not in-app purchases.
+
+**Operator checklist:** [docs/OPERATOR_CHECKLIST.md](./docs/OPERATOR_CHECKLIST.md)
 
 ## 1. Supabase project
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Run all SQL files in `supabase/migrations/` in order in the SQL editor.
+2. Run all SQL files in `supabase/migrations/` in order (or `supabase/ALL_MIGRATIONS_IN_ORDER.sql` once).
 3. Enable auth providers under Authentication → Providers:
    - **Google** (recommended for Android) — create OAuth credentials in Google Cloud, add authorized redirect URI `https://YOUR_PROJECT.supabase.co/auth/v1/callback`, paste Client ID/Secret into Supabase Google provider.
-   - Optional: **Email** as a backup (keep Confirm email on for production).
+   - **Email** — enable for sign-in (disable confirm email for faster testing if you want).
 4. In Authentication → URL Configuration, add your site URL (GitHub Pages / localhost) to **Redirect URLs**.
-5. Add to `.env.local`:
+5. For local dev, add to `.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=your-sandbox-client-id
 ```
 
-## 2. PayPal coin packs
+## 2. Edge functions (payouts)
 
-1. Create apps at [PayPal Developer](https://developer.paypal.com/dashboard/) (Sandbox for testing).
-2. Copy **Client ID** → `NEXT_PUBLIC_PAYPAL_CLIENT_ID` (app) and `PAYPAL_CLIENT_ID` (edge secrets).
-3. Copy **Secret** → Supabase secret `PAYPAL_CLIENT_SECRET` only.
-4. Deploy edge functions:
+Deploy from the **repo root** (folder must contain `supabase/functions/`):
 
 ```bash
 npm install -g supabase
@@ -36,37 +35,38 @@ supabase link --project-ref YOUR_REF
 supabase secrets set \
   PAYPAL_CLIENT_ID=your_client_id \
   PAYPAL_CLIENT_SECRET=your_secret \
-  PAYPAL_MODE=sandbox
-supabase functions deploy create-paypal-order
-supabase functions deploy complete-paypal-order
-supabase functions deploy paypal-webhook --no-verify-jwt
+  PAYPAL_MODE=sandbox \
+  CRON_SECRET=your_long_random_string \
+  PAYPAL_PAYOUTS_ENABLED=false
+supabase functions deploy process-pending-payouts --no-verify-jwt --yes
 ```
 
-5. Optional webhook in PayPal Dashboard → your app → Webhooks:
+Keep `PAYPAL_PAYOUTS_ENABLED=false` until PayPal Business **Payouts** is enabled and you accept real-money ops risk.
 
-`https://YOUR_REF.supabase.co/functions/v1/paypal-webhook`
+Full automation: **[AUTOMATION.md](./AUTOMATION.md)**.
 
-Events: `PAYMENT.CAPTURE.COMPLETED`, `CHECKOUT.ORDER.COMPLETED`
+## 3. Withdrawals (user flow)
 
-6. Sign in → **Profile → Buy coin packs** → approve in PayPal → return URL credits coins.
+Users save **PayPal** or **Cash App** on the Payouts tab. `request_withdrawal` creates a `pending` row. The worker `process-pending-payouts` sends PayPal Payouts when enabled.
 
-### Return URL
-
-PayPal redirects to `/?paypal=success&token=ORDER_ID`. The app calls `complete-paypal-order` to capture and credit coins (idempotent).
-
-### Google Play note
-
-Digital coin sales **inside** the Android app must use **Google Play Billing**, not PayPal in a WebView. Use PayPal on web or external browser until Play Billing is added.
-
-## 3. Withdrawals (automatic PayPal payouts)
-
-Users can enter a PayPal email on cashout. A scheduled worker (`process-pending-payouts`) can send [PayPal Payouts](https://developer.paypal.com/docs/payouts/) automatically — see **[AUTOMATION.md](./AUTOMATION.md)**.
-
-## 4. Environment reference
-
-See `.env.example`.
-
-## 5. Security
+## 4. Security
 
 - Never put `PAYPAL_CLIENT_SECRET` or `SUPABASE_SERVICE_ROLE_KEY` in the client app.
 - Use `PAYPAL_MODE=live` only in production secrets.
+
+---
+
+## Appendix — legacy coin-pack checkout (not in app UI)
+
+These remain in the repo for possible future use or Play Billing experiments. **No setup required** for the current product.
+
+| Artifact | Purpose |
+|----------|---------|
+| `create-paypal-order`, `complete-paypal-order`, `paypal-webhook` | PayPal checkout for virtual coin packs |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | Baked into static build if you re-mount `CoinPacks` |
+| `src/components/play-earn/coin-packs.tsx` | Unmounted component |
+| Migration `20260322000005_paypal_payments.sql` | `payment_fulfillments` table |
+
+To enable legacy web packs: set `NEXT_PUBLIC_PAYPAL_CLIENT_ID` in GitHub + `.env.local`, deploy the three checkout functions, mount `CoinPacks` in the UI, and test `/?paypal=success` return handling (`paypal-return.tsx`).
+
+Digital coin sales **inside** the Android app must use **Google Play Billing**, not PayPal in a WebView.

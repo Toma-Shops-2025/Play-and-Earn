@@ -7,9 +7,10 @@ What runs **automatically** in this project and how to turn it on.
 | Feature | How |
 |---------|-----|
 | **3-hour coin → cash** | Timer in app + `sync_conversion` on server |
-| **PayPal coin packs** | User returns from PayPal → `complete-paypal-order` credits coins |
-| **PayPal pack backup** | `paypal-webhook` (if configured in PayPal Dashboard) |
 | **Ad / game economy** | Server RPCs enforce limits when signed in |
+| **Cashout queue** | `request_withdrawal` writes `withdrawals` (PayPal / Cash App) |
+
+Legacy coin-pack checkout (`create-paypal-order` / `complete-paypal-order`) is **not** in the app UI — see **BACKEND_SETUP.md** appendix.
 
 ## 1. Automatic PayPal withdrawals (optional)
 
@@ -63,13 +64,12 @@ Add these **repository secrets** (Settings → Secrets → Actions):
 | `CRON_SECRET` | Same value as Supabase `CRON_SECRET` |
 | `NEXT_PUBLIC_SUPABASE_URL` | For building the web app on Pages |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | For building the web app on Pages |
-| `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | For building the web app on Pages |
 
 Workflows in `.github/workflows/`:
 
 - **`ci.yml`** — `npm run build` on push/PR.
 - **`deploy-web-pages.yml`** — static site to **GitHub Pages** on push to `main`.
-- **`deploy-backend.yml`** — deploys PayPal + payout edge functions on push to `main` when `supabase/` changes.
+- **`deploy-backend.yml`** — deploys edge functions (payout worker + legacy PayPal checkout) on push to `main` when `supabase/` changes.
 - **`process-payouts-cron.yml`** — calls the payout worker every **15 minutes**.
 
 Migrations are **not** auto-applied (safer). After new SQL files, run them in the Supabase SQL editor or use `supabase db push` locally.

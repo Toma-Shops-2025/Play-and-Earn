@@ -3,6 +3,10 @@
 **Your repo:** [github.com/Toma-Shops-2025/Play-and-Earn](https://github.com/Toma-Shops-2025/Play-and-Earn)  
 **Your live site (after Pages deploy):** [toma-shops-2025.github.io/Play-and-Earn/](https://toma-shops-2025.github.io/Play-and-Earn/)
 
+**Current product:** earn rewards, convert on a timer, cash out to PayPal / Cash App — **no coin-pack store** in the app. PayPal setup below is for **optional automatic payouts**, not IAP.
+
+**Short path:** [docs/OPERATOR_CHECKLIST.md](./OPERATOR_CHECKLIST.md)
+
 Do these sections **in order**. Each step is one small action.
 
 ---
@@ -40,8 +44,8 @@ Do these sections **in order**. Each step is one small action.
 | `SUPABASE_URL` | Supabase → **Project Settings** → **API** → Project URL (`https://xxx.supabase.co`) |
 | `NEXT_PUBLIC_SUPABASE_URL` | Same as `SUPABASE_URL` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → **API** → `anon` `public` key |
-| `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | PayPal Developer → your app → **Client ID** (sandbox first) |
 | `CRON_SECRET` | Make up a long random string (password generator); use the **same** value in Supabase later |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | *(Optional — legacy coin packs only; not used by current UI)* |
 
 ### A5. Confirm workflows run
 1. Open **Actions** tab.
@@ -76,8 +80,13 @@ supabase db push
 3. `20260322000002_wallet_ad_stats.sql`
 4. `20260322000003_profitable_economy.sql`
 5. `20260322000004_three_hour_payout_cycle.sql`
-6. `20260322000005_paypal_payments.sql`
+6. `20260322000005_paypal_payments.sql` (fulfillment table; keep for schema consistency)
 7. `20260322000006_payout_automation.sql`
+8. `20260322000007_portal_play_rewards.sql`
+9. `20260322000008_justplay_payouts.sql`
+10. `20260322000009_first_cashout_and_cap.sql`
+
+Or run **`supabase/ALL_MIGRATIONS_IN_ORDER.sql` once** on an empty database (not twice).
 
 **Troubleshooting:** see the table in [SUPABASE_MIGRATIONS.md](./SUPABASE_MIGRATIONS.md).
 
@@ -102,36 +111,29 @@ supabase db push
    ```
 3. `PAYPAL_PAYOUTS_ENABLED=false` until you are ready for **real** payouts.
 
-### B5. Deploy functions via GitHub
-1. Make a small commit that touches `supabase/` (or run **Actions** → **Deploy Supabase backend** → **Run workflow**).
-2. Wait for green check.
-
-### B6. PayPal return URLs (coin packs)
-1. PayPal Developer Dashboard → your app.
-2. Ensure sandbox/live app allows your site URL.
-3. After Pages deploys, use:  
-   **https://toma-shops-2025.github.io/Play-and-Earn/**  
-   (PayPal return paths are `/?paypal=success` on that host.)
+### B5. Deploy edge functions
+1. **Required today:** `process-pending-payouts` (`supabase functions deploy process-pending-payouts --no-verify-jwt --yes` from repo root, or **Actions** → **Deploy Supabase backend**).
+2. Order/checkout functions (`create-paypal-order`, etc.) are **optional** — not used by the current app UI.
+3. Wait for green check (deploy workflow uses `--yes` for non-interactive CI).
 
 ---
 
-## Part C — PayPal (buying coin packs)
+## Part C — PayPal (automatic payouts only)
 
-### C1. Developer account
+Skip this entire part until you are ready for **real money** leaving your PayPal Business account. Until then, keep `PAYPAL_PAYOUTS_ENABLED=false`; users can still **queue** cashouts in the database.
+
+### C1. Developer / Business account
 1. Go to [https://developer.paypal.com/dashboard/](https://developer.paypal.com/dashboard/).
-2. **Apps & Credentials** → **Sandbox** → **Create App**.
-3. Copy **Client ID** and **Secret** (Secret → Supabase only, never the mobile app).
+2. **Apps & Credentials** → **Sandbox** (then live when ready) → **Create App**.
+3. Copy **Client ID** and **Secret** → Supabase secrets only (`PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`). **Do not** add Client ID to the web build unless you re-enable coin-pack UI.
 
-### C2. Webhook (optional backup)
-1. PayPal app → **Webhooks** → Add webhook.
-2. URL: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/paypal-webhook`
-3. Events: `PAYMENT.CAPTURE.COMPLETED`, `CHECKOUT.ORDER.COMPLETED`.
+### C2. Test payout worker (sandbox)
+1. Set secrets per **B4** and **Part F**.
+2. Create a signed-in user with ready balance and a saved PayPal email; request cashout.
+3. Trigger worker manually or wait for **Process PayPal payouts** cron.
+4. Inspect `withdrawals` in Supabase (`completed` / `failed`).
 
-### C3. Test a purchase
-1. Open your GitHub Pages URL on a phone or desktop.
-2. **Profile** → sign up / sign in.
-3. **Buy coin packs** → complete PayPal **sandbox** payment.
-4. You should return to the app and see coins added.
+*(Legacy coin-pack checkout and `paypal-webhook` are documented in **BACKEND_SETUP.md** appendix — not part of current product.)*
 
 ---
 
@@ -196,8 +198,7 @@ Only when you are ready for real cash leaving your account:
 | Supabase functions | Push changes under `supabase/` → **Deploy Supabase backend** |
 | Build test | **CI** on every push/PR |
 | 3-hour coin → cash | In-app timer + database |
-| PayPal coin packs | User pays → return URL captures order |
-| Payout queue | **Process PayPal payouts** every 15 min (if F2 enabled) |
+| Payout queue | **Process PayPal payouts** every 15 min (if Part F enabled) |
 
 ---
 
@@ -207,8 +208,7 @@ Only when you are ready for real cash leaving your account:
 |---------|--------|
 | Actions red on deploy-backend | Secrets `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF` |
 | Pages 404 | Settings → Pages source = GitHub Actions; workflow green |
-| PayPal checkout fails | Supabase secrets; functions deployed; user signed in |
-| No coins after PayPal | `complete-paypal-order` logs in Supabase → Edge Functions |
-| Payouts not sending | `PAYPAL_PAYOUTS_ENABLED=true`, user entered email, `CRON_SECRET` matches |
+| Payouts not sending | `PAYPAL_PAYOUTS_ENABLED=true`, PayPal secrets set, user entered email, `CRON_SECRET` matches |
+| Deploy backend fails on “Confirmation required” | Use latest `deploy-backend.yml` (`--yes` on deploy) or deploy from laptop CLI |
 
 Need more detail on one area: `BACKEND_SETUP.md`, `AUTOMATION.md`, `ANDROID_RELEASE.md`, `UNITY_ADS.md`.

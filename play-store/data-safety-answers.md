@@ -36,7 +36,7 @@ If closed testing ships **without** sign-in/Supabase, you can mark email as **No
 ### Not collected in this Android build
 
 - Precise location
-- Financial info / payment info on device (PayPal coin packs are hidden on Android; Play Billing is not shipped yet)
+- Financial info / payout destination (PayPal email or Cash App tag) stored on device and sent to our backend when you cash out; no in-app purchase store
 - Contacts, photos, files, health, messages
 
 ## Security practices

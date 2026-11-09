@@ -6,7 +6,8 @@ Mobile-style **virtual rewards** arcade (mini-games, wallet UI, daily check-ins)
 **Start here (GitHub + Supabase + PayPal + Play):** **[docs/GITHUB_SETUP_CHECKLIST.md](./docs/GITHUB_SETUP_CHECKLIST.md)**  
 **Retest / what’s required today:** **[docs/OPERATOR_CHECKLIST.md](./docs/OPERATOR_CHECKLIST.md)**  
 **Real ads + live PayPal payouts:** **[docs/GO_LIVE_ADS_AND_PAYOUTS.md](./docs/GO_LIVE_ADS_AND_PAYOUTS.md)**  
-**Supabase DB (migrations):** **[docs/SUPABASE_MIGRATIONS.md](./docs/SUPABASE_MIGRATIONS.md)**
+**Supabase DB (migrations):** **[docs/SUPABASE_MIGRATIONS.md](./docs/SUPABASE_MIGRATIONS.md)**  
+**Full copy-paste guide:** **[docs/PLAY_N_EARN_COMPLETE_GUIDE.md](./docs/PLAY_N_EARN_COMPLETE_GUIDE.md)**
 
 ## Quick start (web preview)
 

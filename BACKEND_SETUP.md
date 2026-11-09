@@ -16,7 +16,7 @@ The shipped app does **not** sell coin packs. PayPal credentials are for the **p
 3. Enable auth providers under Authentication → Providers:
    - **Google** (recommended for Android) — create OAuth credentials in Google Cloud, add authorized redirect URI `https://YOUR_PROJECT.supabase.co/auth/v1/callback`, paste Client ID/Secret into Supabase Google provider. To brand the sign-in screen as **Play N' Earn**, see **[docs/GOOGLE_SIGNIN_BRANDING.md](./docs/GOOGLE_SIGNIN_BRANDING.md)** (Google will still show your `*.supabase.co` hostname unless you add a custom auth domain).
    - **Email** — enable for sign-in (disable confirm email for faster testing if you want).
-4. In Authentication → URL Configuration, add your site URL (GitHub Pages / localhost) to **Redirect URLs**.
+4. In Authentication → URL Configuration, add your site URL (GitHub Pages / localhost) and **`com.playearn.arcade://auth/callback`** (APK) to **Redirect URLs**. See **[docs/NATIVE_GOOGLE_SIGNIN.md](./docs/NATIVE_GOOGLE_SIGNIN.md)**.
 5. For local dev, add to `.env.local`:
 
 ```env

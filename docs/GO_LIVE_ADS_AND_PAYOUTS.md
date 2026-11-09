@@ -17,7 +17,7 @@ Use this when you are **intentionally** moving from test to production. Real pay
 
 ### 2. Android project
 
-From repo root, edit `android/app/src/main/res/values/levelplay.xml` (see `levelplay.xml.example`).
+From repo root, edit `android/app/src/main/res/values/levelplay.xml` (template: `android/levelplay.xml.example`).
 
 Replace the three `REPLACE_WITH_*` strings with your real keys — **never commit live keys to a public repo** if the repo is public (use a private fork or local-only commit).
 

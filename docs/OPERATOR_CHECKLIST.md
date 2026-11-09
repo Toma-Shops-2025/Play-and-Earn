@@ -1,5 +1,7 @@
 # Operator checklist (current product — no coin packs)
 
+**Going live with real ads + PayPal payouts:** **[GO_LIVE_ADS_AND_PAYOUTS.md](./GO_LIVE_ADS_AND_PAYOUTS.md)**
+
 Play N' Earn is **earn → 3-hour conversion → cash out** (PayPal / Cash App). The app does **not** sell coin packs in the UI. Revenue is **ads** (Unity LevelPlay on Android); optional **real PayPal payouts** are ops-only.
 
 Use this before retesting production. Full repo wiring: **[GITHUB_SETUP_CHECKLIST.md](./GITHUB_SETUP_CHECKLIST.md)**.

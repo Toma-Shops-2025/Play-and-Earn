@@ -13,7 +13,7 @@ This app uses **Unity LevelPlay** (Unity’s mediation SDK) for **rewarded video
 
 **Best time to add the app in Unity:** **before you upload the first closed-testing build**, so testers can verify ads and you can read early eCPM. You do **not** need ads on day one of internal testing — but keys should be in place **before** wide closed testing.
 
-**Keep real-money payouts off** until after you have **30+ days** of ad data (see **`docs/REWARDS_AND_PAYOUTS.md`**).
+For production ads + payouts together, follow **`docs/GO_LIVE_ADS_AND_PAYOUTS.md`**. Default advice: prove ad ARPU before scaling live payouts (see **`docs/REWARDS_AND_PAYOUTS.md`**).
 
 ## Reward economy (default)
 

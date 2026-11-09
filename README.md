@@ -5,6 +5,7 @@ Mobile-style **virtual rewards** arcade (mini-games, wallet UI, daily check-ins)
 **Repository:** [github.com/Toma-Shops-2025/Play-and-Earn](https://github.com/Toma-Shops-2025/Play-and-Earn)  
 **Start here (GitHub + Supabase + PayPal + Play):** **[docs/GITHUB_SETUP_CHECKLIST.md](./docs/GITHUB_SETUP_CHECKLIST.md)**  
 **Retest / what’s required today:** **[docs/OPERATOR_CHECKLIST.md](./docs/OPERATOR_CHECKLIST.md)**  
+**Real ads + live PayPal payouts:** **[docs/GO_LIVE_ADS_AND_PAYOUTS.md](./docs/GO_LIVE_ADS_AND_PAYOUTS.md)**  
 **Supabase DB (migrations):** **[docs/SUPABASE_MIGRATIONS.md](./docs/SUPABASE_MIGRATIONS.md)**
 
 ## Quick start (web preview)

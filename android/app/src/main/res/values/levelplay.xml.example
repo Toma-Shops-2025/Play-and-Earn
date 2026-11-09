@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Copy this file to levelplay.xml (or paste values into levelplay.xml).
+         Unity LevelPlay → App settings → App key -->
+    <string name="levelplay_app_key" translatable="false">YOUR_LEVELPLAY_APP_KEY</string>
+  <!-- Monetize → Ad units -->
+    <string name="levelplay_rewarded_ad_unit_id" translatable="false">YOUR_REWARDED_AD_UNIT_ID</string>
+    <string name="levelplay_interstitial_ad_unit_id" translatable="false">YOUR_INTERSTITIAL_AD_UNIT_ID</string>
+</resources>

@@ -8,7 +8,7 @@ All tunables live in **`src/lib/economy-config.ts`**.
 
 | Lever | Setting | Why |
 |-------|---------|-----|
-| Real money payouts | **Off** (`realMoneyPayoutsEnabled: false`) | No PayPal/Connect liability until you prove unit economics |
+| Real money payouts (UI copy) | **On** in `economy-config.ts` | Server still needs `PAYPAL_PAYOUTS_ENABLED=true` + live PayPal secrets |
 | Virtual cash conversion | **2,500 coins = $1** virtual | Slows “cash balance” growth vs old 1,000:1 |
 | Cashout threshold | **$25 virtual** | Fewer withdrawal requests; more time to monetize with ads |
 | Rewarded ads | **10 coins × 25/day** | More impressions; slightly lower coins per view |

@@ -1,4 +1,10 @@
-export { formatCash, formatRewardFromCoins, formatSignedRewardFromCoins } from "@/lib/money";
+export {
+  formatCash,
+  formatRewardFromCoins,
+  formatSignedRewardFromCoins,
+  formatSignedStreakReward,
+  formatStreakRewardSubtitle,
+} from "@/lib/money";
 
 export function formatCountdown(totalSeconds: number): string {
   const hours = Math.floor(totalSeconds / 3600);

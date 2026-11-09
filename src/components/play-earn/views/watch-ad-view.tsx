@@ -9,6 +9,7 @@ import { useAuth } from "@/context/auth-provider";
 import { useWallet } from "@/context/wallet-provider";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { MonetizationHint } from "@/components/play-earn/monetization-hint";
+import { WebVsNativeAdHint } from "@/components/play-earn/web-vs-native-ad-hint";
 import { ECONOMY } from "@/lib/economy-config";
 
 export function WatchAdView() {
@@ -66,6 +67,8 @@ export function WatchAdView() {
           <strong>{ECONOMY.rewardedAd.dailyLimit}</strong> videos per day — main cash engine.
         </p>
       </section>
+
+      <WebVsNativeAdHint />
 
       <section className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-sm">
         <div className="flex items-center justify-between">

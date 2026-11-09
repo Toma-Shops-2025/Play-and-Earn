@@ -9,7 +9,12 @@ import {
 } from "@/lib/daily-ad-gate";
 import { showRewardedAdWithFallback } from "@/lib/rewarded-ads";
 import { useWallet } from "@/context/wallet-provider";
-import { formatCash, formatSignedRewardFromCoins } from "@/lib/format";
+import {
+  formatCash,
+  formatSignedStreakReward,
+  formatStreakRewardSubtitle,
+} from "@/lib/format";
+import { WebVsNativeAdHint } from "@/components/play-earn/web-vs-native-ad-hint";
 
 const WEEKLY_REWARDS = ECONOMY.dailyStreakCoins;
 
@@ -54,7 +59,12 @@ export function RewardsView() {
             : "Check in each day to stack bonus cash."}{" "}
           Pending: <span className="font-bold text-lime-300">{formatCash(pendingCash)}</span>
         </p>
+        <p className="mt-2 text-xs text-fuchsia-100/75">
+          Streak grows through Day 7 — later days pay more pending earnings.
+        </p>
       </section>
+
+      <WebVsNativeAdHint />
 
       {message ? (
         <p className="rounded-xl border border-cyan-400/20 bg-white/5 px-3 py-2 text-center text-sm text-cyan-100">
@@ -67,6 +77,7 @@ export function RewardsView() {
           const claimed = claimedRewardDays.includes(index);
           const isToday = index === todayIndex;
           const needsAdFirst = requiresAd && isToday && !dailyAdUnlocked && !claimed;
+          const isFinale = index === WEEKLY_REWARDS.length - 1;
 
           return (
             <div
@@ -74,12 +85,28 @@ export function RewardsView() {
               className={`rounded-2xl border p-3 text-center shadow-sm ${
                 isToday
                   ? "border-lime-400/60 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.25)]"
-                  : "border-white/10 bg-white/5"
+                  : isFinale
+                    ? "border-amber-400/40 bg-amber-400/5"
+                    : "border-white/10 bg-white/5"
               }`}
             >
-              <p className="text-xs font-medium text-violet-200/70">Day {index + 1}</p>
-              <p className="mt-1 text-lg font-extrabold text-lime-300">
-                {formatSignedRewardFromCoins(reward)}
+              <p className="text-xs font-medium text-violet-200/70">
+                Day {index + 1}
+                {isFinale ? (
+                  <span className="ml-1 text-[10px] font-bold uppercase text-amber-300">
+                    Best
+                  </span>
+                ) : null}
+              </p>
+              <p
+                className={`mt-1 font-extrabold tabular-nums text-lime-300 ${
+                  isFinale ? "text-xl" : "text-lg"
+                }`}
+              >
+                {formatSignedStreakReward(reward)}
+              </p>
+              <p className="text-[10px] text-violet-200/60">
+                {formatStreakRewardSubtitle(reward)}
               </p>
               {needsAdFirst ? (
                 <Button
@@ -109,7 +136,8 @@ export function RewardsView() {
 
       {requiresAd && todayReward !== undefined && !claimedRewardDays.includes(todayIndex) ? (
         <p className="text-center text-xs text-violet-200/70">
-          Today’s bonus: {formatSignedRewardFromCoins(todayReward)} after{" "}
+          Today’s bonus: {formatSignedStreakReward(todayReward)} (
+          {formatStreakRewardSubtitle(todayReward)}) after{" "}
           {dailyAdUnlocked ? "claiming" : "watching an ad"}.
         </p>
       ) : null}

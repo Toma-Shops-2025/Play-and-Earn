@@ -16,6 +16,9 @@ $ErrorActionPreference = "Stop"
 $Root = $PSScriptRoot
 Set-Location $Root
 
+# GitHub Pages basePath must not be baked into APK assets (breaks auth + loads as github.io).
+Remove-Item Env:GITHUB_PAGES_REPOSITORY -ErrorAction SilentlyContinue
+
 function Ensure-AndroidSdk {
     $sdk = $env:ANDROID_HOME
     if (-not $sdk) { $sdk = $env:ANDROID_SDK_ROOT }

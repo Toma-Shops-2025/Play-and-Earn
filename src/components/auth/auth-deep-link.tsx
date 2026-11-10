@@ -5,7 +5,10 @@ import { getSupabase } from "@/lib/supabase/client";
 import { NATIVE_OAUTH_REDIRECT } from "@/lib/oauth-redirect";
 
 function isAuthCallbackUrl(url: string): boolean {
-  return url.startsWith(NATIVE_OAUTH_REDIRECT) || url.includes("code=");
+  return (
+    url.startsWith("com.playearn.arcade://") ||
+    url.startsWith(NATIVE_OAUTH_REDIRECT)
+  );
 }
 
 async function finishNativeOAuth(url: string): Promise<void> {

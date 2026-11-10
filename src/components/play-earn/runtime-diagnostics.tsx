@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getGoogleWebClientId } from "@/lib/supabase/env";
 
 type Diag = {
   platform: string;
@@ -57,6 +58,9 @@ export function RuntimeDiagnostics() {
       <p className="mt-1 font-mono text-[10px] opacity-90">
         platform={diag.platform} · native={String(diag.native)}
         {diag.appId ? ` · id=${diag.appId}` : ""}
+        {diag.platform === "android" && diag.native
+          ? ` · nativeGoogle=${getGoogleWebClientId() ? "yes" : "no"}`
+          : ""}
       </p>
       {!okApk ? (
         <p className="mt-1">

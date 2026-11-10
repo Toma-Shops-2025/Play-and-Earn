@@ -12,6 +12,7 @@ import {
 import type { Session, User } from "@supabase/supabase-js";
 import { getSupabase } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { signInWithGoogleOnDevice } from "@/lib/native-google-sign-in";
 import {
   NATIVE_OAUTH_REDIRECT,
   webOAuthRedirectTo,
@@ -75,6 +76,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!supabase) return "Backend auth is not configured.";
 
     const { Capacitor } = await import("@capacitor/core");
+    const onAndroid =
+      Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
+
+    if (onAndroid) {
+      const device = await signInWithGoogleOnDevice();
+      if (device.ok) {
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: device.idToken,
+        });
+        return error?.message ?? null;
+      }
+      if (!device.fallbackBrowser) {
+        return device.error;
+      }
+    }
+
     const native = Capacitor.isNativePlatform();
     const redirectTo = native ? NATIVE_OAUTH_REDIRECT : webOAuthRedirectTo();
 

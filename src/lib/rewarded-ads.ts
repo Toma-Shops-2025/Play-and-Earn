@@ -27,6 +27,14 @@ export const RewardedAds = registerPlugin<RewardedAdsPlugin>("RewardedAds", {
 /** Simulated ad for web dev (15s countdown). */
 export async function showRewardedAdWithFallback(): Promise<RewardedAdResult> {
   try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (!Capacitor.isNativePlatform()) {
+      const init = await RewardedAds.initialize();
+      if (!init.ok) return { rewarded: false, message: init.message };
+      const { ready } = await RewardedAds.isRewardedAdReady();
+      if (!ready) await new Promise((r) => setTimeout(r, 800));
+      return await RewardedAds.showRewardedAd();
+    }
     const init = await RewardedAds.initialize();
     if (!init.ok) {
       return { rewarded: false, message: init.message ?? "Ads not configured." };
@@ -50,6 +58,10 @@ export function formatAdRewardLabel(): string {
 
 export async function showInterstitialWithFallback(): Promise<InterstitialAdResult> {
   try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (!Capacitor.isNativePlatform()) {
+      return { shown: false, message: "Interstitials run in the Android app only." };
+    }
     const init = await RewardedAds.initialize();
     if (!init.ok) {
       return { shown: false, message: init.message };

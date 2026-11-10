@@ -10,6 +10,7 @@ import { clearAllAppData } from "@/lib/compliance";
 import { useAuth } from "@/context/auth-provider";
 import { useWallet } from "@/context/wallet-provider";
 import { formatCash } from "@/lib/format";
+import { RuntimeDiagnostics } from "@/components/play-earn/runtime-diagnostics";
 
 const AVATARS = ["🦊", "🐼", "🦁", "🐸", "🦄", "🐙"];
 
@@ -86,6 +87,8 @@ export function CustomView() {
       </section>
 
       <AuthPanel />
+
+      <RuntimeDiagnostics />
 
       <section className="rounded-2xl border border-white/10 bg-white/5 p-4">
         <h3 className="text-sm font-bold text-cyan-100">Legal &amp; help</h3>

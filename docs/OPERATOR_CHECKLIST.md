@@ -1,5 +1,7 @@
 # Operator checklist (current product — no coin packs)
 
+**Going live with real ads + PayPal payouts:** **[GO_LIVE_ADS_AND_PAYOUTS.md](./GO_LIVE_ADS_AND_PAYOUTS.md)**
+
 Play N' Earn is **earn → 3-hour conversion → cash out** (PayPal / Cash App). The app does **not** sell coin packs in the UI. Revenue is **ads** (Unity LevelPlay on Android); optional **real PayPal payouts** are ops-only.
 
 Use this before retesting production. Full repo wiring: **[GITHUB_SETUP_CHECKLIST.md](./GITHUB_SETUP_CHECKLIST.md)**.
@@ -10,8 +12,8 @@ Use this before retesting production. Full repo wiring: **[GITHUB_SETUP_CHECKLIS
 
 | # | Task | Verify |
 |---|------|--------|
-| 1 | **Supabase DB** — all [10 migrations](./SUPABASE_MIGRATIONS.md) or `supabase/ALL_MIGRATIONS_IN_ORDER.sql` once | Table Editor: `profiles`, `ad_reward_claims`, `withdrawals`, … |
-| 2 | **Auth** — Email and/or Google; **Redirect URLs** include `https://toma-shops-2025.github.io/Play-and-Earn/**` and `http://localhost:43123/**` | Sign in on live site; “Cloud sync on” |
+| 1 | **Supabase DB** — all [11 migrations](./SUPABASE_MIGRATIONS.md) or `supabase/ALL_MIGRATIONS_IN_ORDER.sql` once (+ migration 10 if already ran init) | Table Editor: `profiles`, `ad_reward_claims`, `withdrawals`, … |
+| 2 | **Auth** — Email and/or Google; **Redirect URLs** include `https://toma-shops-2025.github.io/Play-and-Earn/**`, `http://localhost:43123/**`, and **`com.playearn.arcade://auth/callback`** (APK) | Web: “Cloud sync on”; APK: sign in returns to app ([NATIVE_GOOGLE_SIGNIN.md](./NATIVE_GOOGLE_SIGNIN.md)) |
 | 3 | **GitHub secrets** — `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **Deploy web** green; Profile not “Add Supabase keys…” |
 | 4 | **GitHub secrets** — `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF` (function deploys) | **Deploy Supabase backend** green or manual `supabase functions deploy` |
 

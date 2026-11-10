@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Unity LevelPlay → App settings → App key -->
-    <string name="levelplay_app_key" translatable="false">REPLACE_WITH_LEVELPLAY_APP_KEY</string>
-    <!-- Monetize → Ad units → Rewarded → Ad unit ID -->
-    <string name="levelplay_rewarded_ad_unit_id" translatable="false">REPLACE_WITH_REWARDED_AD_UNIT_ID</string>
-    <string name="levelplay_interstitial_ad_unit_id" translatable="false">REPLACE_WITH_INTERSTITIAL_AD_UNIT_ID</string>
+    <!-- Unity Ads Monetization → Placements → Android Game ID (NOT cloud project 29446db95) -->
+    <string name="levelplay_app_key" translatable="false">6218645</string>
+    <!-- Placements → Rewarded → Placement ID (full UUID from copy icon) -->
+    <string name="levelplay_rewarded_ad_unit_id" translatable="false">REPLACE_REWARDED_PLACEMENT_UUID</string>
+    <!-- Placements → Interstitial → Placement ID (full UUID from copy icon) -->
+    <string name="levelplay_interstitial_ad_unit_id" translatable="false">REPLACE_INTERSTITIAL_PLACEMENT_UUID</string>
 </resources>

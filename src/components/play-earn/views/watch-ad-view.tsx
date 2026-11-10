@@ -9,11 +9,13 @@ import { useAuth } from "@/context/auth-provider";
 import { useWallet } from "@/context/wallet-provider";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { MonetizationHint } from "@/components/play-earn/monetization-hint";
+import { WebVsNativeAdHint } from "@/components/play-earn/web-vs-native-ad-hint";
 import { ECONOMY } from "@/lib/economy-config";
 
 export function WatchAdView() {
   const { user } = useAuth();
-  const { mode, grantAdReward, adsWatchedToday, adsRemainingToday } = useWallet();
+  const { mode, grantAdReward, adsWatchedToday, adsRemainingToday, setActiveTab } =
+    useWallet();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -67,6 +69,8 @@ export function WatchAdView() {
         </p>
       </section>
 
+      <WebVsNativeAdHint />
+
       <section className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
@@ -113,10 +117,22 @@ export function WatchAdView() {
         ) : null}
 
         {cloudRequired && !user ? (
-          <p className="mt-3 flex items-start gap-2 text-xs text-amber-200">
-            <Sparkles className="mt-0.5 h-4 w-4 shrink-0" />
-            Sign in under Profile so ad rewards are saved to your cloud wallet.
-          </p>
+          <div className="mt-3 space-y-2">
+            <p className="flex items-start gap-2 text-xs text-amber-200">
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0" />
+              Sign in on Profile to save ad rewards to your cloud wallet (stays inside
+              the app after Google).
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={() => setActiveTab("custom")}
+            >
+              Open Profile to sign in
+            </Button>
+          </div>
         ) : null}
       </section>
 

@@ -12,7 +12,11 @@ import {
 import type { Session, User } from "@supabase/supabase-js";
 import { getSupabase } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { SITE_URL } from "@/lib/site-url";
+import { signInWithGoogleOnDevice } from "@/lib/native-google-sign-in";
+import {
+  NATIVE_OAUTH_REDIRECT,
+  webOAuthRedirectTo,
+} from "@/lib/oauth-redirect";
 
 type AuthContextValue = {
   enabled: boolean;
@@ -26,11 +30,6 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function oauthRedirectTo(): string {
-  if (typeof window === "undefined") return `${SITE_URL}/`;
-  return `${window.location.origin}${window.location.pathname}`;
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const enabled = isSupabaseConfigured();
@@ -75,16 +74,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = useCallback(async () => {
     const supabase = getSupabase();
     if (!supabase) return "Backend auth is not configured.";
-    const { error } = await supabase.auth.signInWithOAuth({
+
+    const { Capacitor } = await import("@capacitor/core");
+    const onAndroid =
+      Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
+
+    if (onAndroid) {
+      const device = await signInWithGoogleOnDevice();
+      if (device.ok) {
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: device.idToken,
+        });
+        return error?.message ?? null;
+      }
+      if (!device.fallbackBrowser) {
+        return device.error;
+      }
+    }
+
+    const native = Capacitor.isNativePlatform();
+    const redirectTo = native ? NATIVE_OAUTH_REDIRECT : webOAuthRedirectTo();
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: oauthRedirectTo(),
+        redirectTo,
+        skipBrowserRedirect: native,
         queryParams: {
           prompt: "select_account",
         },
       },
     });
-    return error?.message ?? null;
+    if (error) return error.message;
+
+    if (native && data?.url) {
+      const { Browser } = await import("@capacitor/browser");
+      await Browser.open({ url: data.url });
+    }
+    return null;
   }, []);
 
   const signOut = useCallback(async () => {

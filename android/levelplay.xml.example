@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Template only — do not put this file under res/values (Gradle rejects non-.xml names).
+         Copy values into android/app/src/main/res/values/levelplay.xml -->
+    <string name="levelplay_app_key" translatable="false">YOUR_LEVELPLAY_APP_KEY</string>
+    <string name="levelplay_rewarded_ad_unit_id" translatable="false">YOUR_REWARDED_AD_UNIT_ID</string>
+    <string name="levelplay_interstitial_ad_unit_id" translatable="false">YOUR_INTERSTITIAL_AD_UNIT_ID</string>
+</resources>

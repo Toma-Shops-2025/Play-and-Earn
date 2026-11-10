@@ -1,6 +1,6 @@
 # Supabase database — run migrations
 
-Apply these **ten files in order**. Do not skip ahead or run only the PayPal fix script.
+Apply these **eleven files in order**. Do not skip ahead or run only the PayPal fix script.
 
 | # | File | What it adds |
 |---|------|----------------|
@@ -14,6 +14,7 @@ Apply these **ten files in order**. Do not skip ahead or run only the PayPal fix
 | 8 | `supabase/migrations/20260322000007_portal_play_rewards.sql` | Y8 / Crazy Games per-minute coins + daily cap |
 | 9 | `supabase/migrations/20260322000008_justplay_payouts.sql` | PayPal / Cash App destinations |
 | 10 | `supabase/migrations/20260322000009_first_cashout_and_cap.sql` | $5 first cashout, then any amount; $25 ready-balance cap |
+| 11 | `supabase/migrations/20260322000010_daily_one_claim_per_day.sql` | One daily streak claim per UTC day (signed-in users) |
 
 ---
 

@@ -73,6 +73,7 @@ Signed-in users must complete an ad before the app calls `grant_ad_reward` (serv
 | Issue | Check |
 |-------|--------|
 | “Set levelplay_app_key…” | Replace placeholders in `levelplay.xml` |
+| **Bad Request – 400** | LevelPlay API rejected the request: wrong **App key** or **ad unit ID**, or Android package ≠ `com.playearn.arcade` in Unity. Rebuild APK after fixing `levelplay.xml`; enable **Test ads** in LevelPlay while debugging. |
 | Ad not ready | Wait for init; ensure network + test mode in LevelPlay |
 | No coins after ad | Sign in for cloud mode; check Supabase migration applied |
 | Build errors | Android Studio → Sync Gradle; JDK 17+ |

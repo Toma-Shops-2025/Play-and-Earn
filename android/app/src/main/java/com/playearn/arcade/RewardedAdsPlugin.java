@@ -26,6 +26,9 @@ public class RewardedAdsPlugin extends Plugin {
 
     private static final String TAG = "RewardedAds";
     private boolean sdkInitialized = false;
+    private boolean sdkInitInProgress = false;
+    private final java.util.ArrayList<PluginCall> pendingInitCalls =
+        new java.util.ArrayList<>();
     private LevelPlayRewardedAd rewardedAd;
     private LevelPlayInterstitialAd interstitialAd;
     private PluginCall pendingRewardedCall;
@@ -62,6 +65,13 @@ public class RewardedAdsPlugin extends Plugin {
             return;
         }
 
+        if (sdkInitInProgress) {
+            pendingInitCalls.add(call);
+            return;
+        }
+        sdkInitInProgress = true;
+        pendingInitCalls.add(call);
+
         LevelPlayInitRequest initRequest =
             new LevelPlayInitRequest.Builder(appKey).build();
 
@@ -72,23 +82,49 @@ public class RewardedAdsPlugin extends Plugin {
                 @Override
                 public void onInitSuccess(@NonNull LevelPlayConfiguration configuration) {
                     sdkInitialized = true;
+                    sdkInitInProgress = false;
                     createRewardedAd(rewardedAdUnitId);
                     createInterstitialAd(activity.getString(R.string.levelplay_interstitial_ad_unit_id));
-                    JSObject ret = new JSObject();
-                    ret.put("ok", true);
-                    call.resolve(ret);
+                    finishInitCalls(true, null);
                 }
 
                 @Override
                 public void onInitFailed(@NonNull LevelPlayInitError error) {
+                    sdkInitInProgress = false;
+                    String msg = humanizeLevelPlayError(error.getErrorMessage());
                     Log.e(TAG, "LevelPlay init failed: " + error.getErrorMessage());
-                    JSObject ret = new JSObject();
-                    ret.put("ok", false);
-                    ret.put("message", error.getErrorMessage());
-                    call.resolve(ret);
+                    finishInitCalls(false, msg);
                 }
             }
         );
+    }
+
+    private void finishInitCalls(boolean ok, String message) {
+        for (PluginCall pending : pendingInitCalls) {
+            JSObject ret = new JSObject();
+            ret.put("ok", ok);
+            if (message != null) {
+                ret.put("message", message);
+            }
+            pending.resolve(ret);
+        }
+        pendingInitCalls.clear();
+    }
+
+    private static String humanizeLevelPlayError(String raw) {
+        if (raw == null || raw.isEmpty()) {
+            return "Could not load ads. Check Unity LevelPlay setup.";
+        }
+        String lower = raw.toLowerCase();
+        if (lower.contains("bad request") || lower.contains("400")) {
+            return "Unity LevelPlay rejected the request (400). "
+                + "Confirm levelplay.xml has your real App key and rewarded ad unit ID, "
+                + "package name com.playearn.arcade matches the Unity dashboard, then rebuild the APK.";
+        }
+        if (lower.contains("replace_with")) {
+            return "Set levelplay_app_key and ad unit IDs in res/values/levelplay.xml, then rebuild.";
+        }
+        return raw;
     }
 
     private void createRewardedAd(String adUnitId) {
@@ -102,7 +138,11 @@ public class RewardedAdsPlugin extends Plugin {
 
                 @Override
                 public void onAdLoadFailed(@NonNull LevelPlayAdError error) {
-                    Log.e(TAG, "Rewarded ad load failed: " + error.getErrorMessage());
+                    String msg = error.getErrorMessage();
+                    Log.e(TAG, "Rewarded ad load failed: " + msg);
+                    if (pendingRewardedCall != null) {
+                        finishRewarded(false, humanizeLevelPlayError(msg));
+                    }
                 }
 
                 @Override
@@ -115,7 +155,7 @@ public class RewardedAdsPlugin extends Plugin {
                     @NonNull LevelPlayAdError error,
                     @NonNull LevelPlayAdInfo adInfo
                 ) {
-                    finishRewarded(false, error.getErrorMessage());
+                    finishRewarded(false, humanizeLevelPlayError(error.getErrorMessage()));
                 }
 
                 @Override
@@ -202,16 +242,33 @@ public class RewardedAdsPlugin extends Plugin {
     @PluginMethod
     public void showRewardedAd(PluginCall call) {
         if (!sdkInitialized || rewardedAd == null) {
-            call.reject("LevelPlay not initialized");
+            JSObject ret = new JSObject();
+            ret.put("rewarded", false);
+            ret.put(
+                "message",
+                sdkInitInProgress
+                    ? "Ads are still starting. Wait a moment and try again."
+                    : "Ads not ready. Open Profile and confirm LevelPlay keys in levelplay.xml, then reinstall."
+            );
+            call.resolve(ret);
             return;
         }
         if (!rewardedAd.isAdReady()) {
             rewardedAd.loadAd();
-            call.reject("Ad not ready yet. Try again in a few seconds.");
+            JSObject ret = new JSObject();
+            ret.put("rewarded", false);
+            ret.put(
+                "message",
+                "No ad loaded yet — connect to the internet, wait a few seconds, and tap again."
+            );
+            call.resolve(ret);
             return;
         }
         if (pendingRewardedCall != null || pendingInterstitialCall != null) {
-            call.reject("Ad already in progress");
+            JSObject ret = new JSObject();
+            ret.put("rewarded", false);
+            ret.put("message", "An ad is already playing.");
+            call.resolve(ret);
             return;
         }
         pendingRewardedCall = call;
@@ -219,7 +276,10 @@ public class RewardedAdsPlugin extends Plugin {
         Activity activity = getActivity();
         if (activity == null) {
             pendingRewardedCall = null;
-            call.reject("No activity");
+            JSObject ret = new JSObject();
+            ret.put("rewarded", false);
+            ret.put("message", "App is not in the foreground.");
+            call.resolve(ret);
             return;
         }
         rewardedAd.showAd(activity);

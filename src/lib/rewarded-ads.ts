@@ -24,22 +24,59 @@ export const RewardedAds = registerPlugin<RewardedAdsPlugin>("RewardedAds", {
   web: () => import("@/lib/rewarded-ads.web").then((m) => new m.RewardedAdsWeb()),
 });
 
+function friendlyAdError(message: string | undefined): string {
+  if (!message?.trim()) {
+    return "Could not show ad. Try again in a few seconds.";
+  }
+  const lower = message.toLowerCase();
+  if (lower.includes("bad request") || /\b400\b/.test(message)) {
+    return [
+      "Unity LevelPlay returned a 400 error — usually wrong App key, ad unit ID, or package name.",
+      "In Unity LevelPlay, confirm Android package com.playearn.arcade, paste keys into",
+      "android/app/src/main/res/values/levelplay.xml, rebuild the APK, and enable Test ads while debugging.",
+    ].join(" ");
+  }
+  return message;
+}
+
+async function waitForRewardedAdReady(maxMs = 12_000): Promise<boolean> {
+  const started = Date.now();
+  while (Date.now() - started < maxMs) {
+    const { ready } = await RewardedAds.isRewardedAdReady();
+    if (ready) return true;
+    await new Promise((r) => setTimeout(r, 600));
+  }
+  return false;
+}
+
 /** Simulated ad for web dev (15s countdown). */
 export async function showRewardedAdWithFallback(): Promise<RewardedAdResult> {
   try {
     const init = await RewardedAds.initialize();
     if (!init.ok) {
-      return { rewarded: false, message: init.message ?? "Ads not configured." };
+      return {
+        rewarded: false,
+        message: friendlyAdError(init.message ?? "Ads not configured."),
+      };
     }
-    const { ready } = await RewardedAds.isRewardedAdReady();
+    const ready = await waitForRewardedAdReady();
     if (!ready) {
-      await new Promise((r) => setTimeout(r, 800));
+      return {
+        rewarded: false,
+        message:
+          "No rewarded ad loaded yet. Check your connection, wait a few seconds, and try again.",
+      };
     }
-    return await RewardedAds.showRewardedAd();
+    const result = await RewardedAds.showRewardedAd();
+    return {
+      ...result,
+      message: result.message ? friendlyAdError(result.message) : result.message,
+    };
   } catch (e) {
+    const raw = e instanceof Error ? e.message : "Could not show ad.";
     return {
       rewarded: false,
-      message: e instanceof Error ? e.message : "Could not show ad.",
+      message: friendlyAdError(raw),
     };
   }
 }

@@ -1,6 +1,6 @@
 # Unity LevelPlay rewarded ads (Android)
 
-This app uses **Unity LevelPlay** (Unity’s mediation SDK) for **rewarded videos** on Android. Web builds show a **simulated** ad for testing UI.
+This app uses the **Unity Ads** Android SDK (Unity Ads Monetization → **Game ID** + **Placement IDs**) for rewarded video on Android. You do **not** need the ironSource / LevelPlay white-screen dashboard for basic testing. Web builds show a **simulated** ad for testing UI.
 
 ## When to add **Play N' Earn** in Unity (recommended timeline)
 

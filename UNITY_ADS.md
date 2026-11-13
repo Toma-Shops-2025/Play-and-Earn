@@ -30,8 +30,8 @@ When Supabase is enabled, rewards are granted via `grant_ad_reward` RPC **after*
 
 1. Open [Unity LevelPlay](https://platform.unity.com/) (same Unity account as your other games).
 2. **Add app** → Android → name **Play N' Earn** → package name `com.playearn.arcade` (must match `applicationId`).
-3. Copy the **App key** (sometimes labeled LevelPlay app key).
-4. **Ad units** → create **Rewarded** and **Interstitial** → copy each **Ad unit ID**.
+3. Copy the **LevelPlay App Key** from the **Apps** page (not the Unity Ads **Game ID** on the Placements screen — using Game ID in `LevelPlay.init` causes **400 Bad Request**).
+4. **Ad units** → create **Rewarded** and **Interstitial** → copy each **Ad unit ID** (UUID).
 5. Under **Networks**, enable **Unity Ads** (and any other networks you use).
 
 ## 2. Android project
@@ -73,7 +73,7 @@ Signed-in users must complete an ad before the app calls `grant_ad_reward` (serv
 | Issue | Check |
 |-------|--------|
 | “Set levelplay_app_key…” | Replace placeholders in `levelplay.xml` |
-| **Bad Request – 400** | LevelPlay API rejected the request: wrong **App key** or **ad unit ID**, or Android package ≠ `com.playearn.arcade` in Unity. Rebuild APK after fixing `levelplay.xml`; enable **Test ads** in LevelPlay while debugging. |
+| **Bad Request – 400** | **`levelplay_app_key` must be the LevelPlay App Key** (Grow → LevelPlay → Apps), **not** Game ID `6218645` or project `29446db95`. Ad units must be **UUID**s. See **`docs/LEVELPLAY_XML_SETUP.md`**. Rebuild APK; enable **Test ads** while debugging. |
 | Ad not ready | Wait for init; ensure network + test mode in LevelPlay |
 | No coins after ad | Sign in for cloud mode; check Supabase migration applied |
 | Build errors | Android Studio → Sync Gradle; JDK 17+ |

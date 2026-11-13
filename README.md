@@ -18,7 +18,7 @@ Open [http://localhost:43123](http://localhost:43123).
 
 ## Unity rewarded ads
 
-**Watch Ad** tab + LevelPlay on Android: **[UNITY_ADS.md](./UNITY_ADS.md)**  
+**Watch Ad** tab + LevelPlay on Android: **[UNITY_ADS.md](./UNITY_ADS.md)** · fix **400 errors**: **[docs/LEVELPLAY_XML_SETUP.md](./docs/LEVELPLAY_XML_SETUP.md)**  
 **Rewards & payouts (profitability):** **[docs/REWARDS_AND_PAYOUTS.md](./docs/REWARDS_AND_PAYOUTS.md)**  
 **Logo → icon/splash:** **[docs/LOGO_HANDOFF.md](./docs/LOGO_HANDOFF.md)**
 

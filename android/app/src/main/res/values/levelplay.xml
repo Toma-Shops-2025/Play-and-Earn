@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Unity LevelPlay → App settings → App key -->
-    <string name="levelplay_app_key" translatable="false">29446db95</string>
-    <!-- Monetize → Ad units → Rewarded → Ad unit ID -->
-    <string name="levelplay_rewarded_ad_unit_id" translatable="false">q2ac8n0loe6ue45n</string>
-    <string name="levelplay_interstitial_ad_unit_id" translatable="false">dfqa2rgedm59oet7</string>
+    <!-- LevelPlay App Key (Grow → LevelPlay → Apps → com.playearn.arcade). NOT Game ID 6218645, NOT 29446db95. -->
+    <string name="levelplay_app_key" translatable="false">REPLACE_LEVELPLAY_APP_KEY</string>
+    <!-- Ad unit UUIDs from LevelPlay → Ad units (not short Placement codes). -->
+    <string name="levelplay_rewarded_ad_unit_id" translatable="false">REPLACE_REWARDED_AD_UNIT_UUID</string>
+    <string name="levelplay_interstitial_ad_unit_id" translatable="false">REPLACE_INTERSTITIAL_AD_UNIT_UUID</string>
 </resources>

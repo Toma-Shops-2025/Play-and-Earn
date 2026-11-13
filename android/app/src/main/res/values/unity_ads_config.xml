@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Unity Cloud → Settings → Test mode (enable while debugging on device) -->
+    <bool name="unity_ads_test_mode" translatable="false">true</bool>
+</resources>

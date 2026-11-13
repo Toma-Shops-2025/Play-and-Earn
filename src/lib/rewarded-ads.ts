@@ -31,9 +31,8 @@ function friendlyAdError(message: string | undefined): string {
   const lower = message.toLowerCase();
   if (lower.includes("bad request") || /\b400\b/.test(message)) {
     return [
-      "Unity LevelPlay returned a 400 error — usually wrong App key, ad unit ID, or package name.",
-      "In Unity LevelPlay, confirm Android package com.playearn.arcade, paste keys into",
-      "android/app/src/main/res/values/levelplay.xml, rebuild the APK, and enable Test ads while debugging.",
+      "Unity Ads rejected the request — check Android Game ID 6218645 and full placement UUIDs in",
+      "android/app/src/main/res/values/levelplay.xml, enable Test mode in Unity → Settings, rebuild the APK.",
     ].join(" ");
   }
   return message;

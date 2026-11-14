@@ -2,7 +2,7 @@
 <resources>
     <!-- Unity Ads Monetization → Settings → Game IDs → Google Play: 6218645 -->
     <string name="levelplay_app_key" translatable="false">6218645</string>
-    <!-- Placements → copy full Placement ID -->
-    <string name="levelplay_rewarded_ad_unit_id" translatable="false">50ffb074-7eca-41d3-9914-28107902521d</string>
-    <string name="levelplay_interstitial_ad_unit_id" translatable="false">59b948e3-4518-4621-a6d1-792ee491534f</string>
+    <!-- Placements → Ad unit ID (name), same as HelixEmpire / BingoX / RewardLoop — not the UUID in Unity Cloud -->
+    <string name="levelplay_rewarded_ad_unit_id" translatable="false">Rewarded_Android</string>
+    <string name="levelplay_interstitial_ad_unit_id" translatable="false">Interstitial_Android</string>
 </resources>

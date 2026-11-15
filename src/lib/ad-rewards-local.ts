@@ -51,7 +51,7 @@ export function grantLocalAdReward(): {
   save(record);
   return {
     ok: true,
-    message: `${formatSignedRewardFromCoins(REWARDED_AD_CONFIG.coinsPerAd)} added for watching an ad.`,
+    message: `${formatSignedRewardFromCoins(REWARDED_AD_CONFIG.coinsPerAd)} added to pending.`,
     coinsGranted: REWARDED_AD_CONFIG.coinsPerAd,
   };
 }

@@ -35,7 +35,7 @@ import {
 } from "@/lib/conversion";
 import { APP_CONFIG } from "@/lib/app-config";
 import { getLocalAdStats, grantLocalAdReward } from "@/lib/ad-rewards-local";
-import { formatCash } from "@/lib/money";
+import { formatCash, formatSignedRewardFromCoins } from "@/lib/money";
 import {
   loadPayoutDestination,
   type PayoutMethod,
@@ -171,7 +171,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       if (cloud.cashBalance > prev.cashBalance + 0.0001) {
         const delta = cloud.cashBalance - prev.cashBalance;
         setLastPayoutNotice(
-          `3-hour payout: +$${delta.toFixed(2)} added to your balance`,
+          `3-hour payout: +${formatCash(delta)} added to your balance`,
         );
       }
       return {
@@ -282,7 +282,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (cloudActive) {
       const result = await cloudGrantAdReward();
       await refreshWallet();
-      return { ok: result.ok, message: result.message };
+      return {
+        ok: result.ok,
+        message:
+          result.ok && result.coinsGranted > 0
+            ? `${formatSignedRewardFromCoins(result.coinsGranted)} added to pending.`
+            : result.message,
+      };
     }
     const result = grantLocalAdReward();
     if (result.ok) {

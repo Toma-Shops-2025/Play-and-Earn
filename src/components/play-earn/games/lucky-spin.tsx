@@ -64,7 +64,8 @@ export function LuckySpin({ onClose }: { onClose: () => void }) {
     setResult(null);
 
     const index = randomInt(0, SEGMENTS.length - 1);
-    const prize = SEGMENTS[index].coins;
+    const segment = SEGMENTS[index];
+    const prize = segment.coins;
     const sweep = 360 / SEGMENTS.length;
     // Pointer sits at top (12 o'clock). Align winning segment center under it.
     const segmentCenter = index * sweep + sweep / 2;
@@ -76,9 +77,22 @@ export function LuckySpin({ onClose }: { onClose: () => void }) {
     });
 
     window.setTimeout(() => {
-      void addCoins("spin", prize);
-      setResult(`You won ${formatSignedRewardFromCoins(prize)}!`);
-      setSpinning(false);
+      void (async () => {
+        try {
+          await addCoins("spin", prize);
+          setResult(
+            `You won ${segment.label} (${formatSignedRewardFromCoins(prize)})!`,
+          );
+        } catch (error) {
+          setResult(
+            error instanceof Error
+              ? error.message
+              : "Reward could not be added. Try again.",
+          );
+        } finally {
+          setSpinning(false);
+        }
+      })();
     }, SPIN_MS);
   }
 

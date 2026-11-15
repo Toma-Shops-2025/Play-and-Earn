@@ -73,7 +73,8 @@ Signed-in users must complete an ad before the app calls `grant_ad_reward` (serv
 | Issue | Check |
 |-------|--------|
 | “Set levelplay_app_key…” | Replace placeholders in `levelplay.xml` |
-| **Bad Request – 400** | Usually **UUID placement IDs with the old Unity SDK API** — use **ad unit names** (`Rewarded_Android`, `Interstitial_Android`) like your other apps, Unity Ads SDK **4.19+**, and Game ID **6218645**. Package must be `com.playearn.arcade` in Unity Cloud. Rebuild APK after fixing `levelplay.xml`. |
+| **Bad Request – 400** | Wrong Game ID, placement, or package. Use Unity Ads SDK **4.19+**, Game ID **6218645**, and each placement’s **Placement ID (UUID)** from Monetization → Placements in `levelplay.xml`. Package must be `com.playearn.arcade`. |
+| **No ad loaded yet** | Often **wrong placement string** (e.g. `Rewarded_Android` only works on legacy Unity projects; Play N' Earn needs the UUID). Enable **Test mode** in Unity or `unity_ads_test_mode` while debugging. |
 | Ad not ready | Wait for init; ensure network + test mode in LevelPlay |
 | No coins after ad | Sign in for cloud mode; check Supabase migration applied |
 | Build errors | Android Studio → Sync Gradle; JDK 17+ |

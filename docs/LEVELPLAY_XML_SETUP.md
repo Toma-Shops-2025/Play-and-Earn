@@ -9,8 +9,10 @@ Path: `android/app/src/main/res/values/levelplay.xml`
 | XML key | Unity Cloud source | Value |
 |---------|-------------------|--------|
 | `levelplay_app_key` | Settings → **Game IDs** → Google Play | `6218645` |
-| `levelplay_rewarded_ad_unit_id` | Placements → Rewarded → **Ad unit ID** (name, e.g. `Rewarded_Android`) | `Rewarded_Android` |
-| `levelplay_interstitial_ad_unit_id` | Placements → Interstitial → **Ad unit ID** | `Interstitial_Android` |
+| `levelplay_rewarded_ad_unit_id` | Placements → Rewarded → **Placement ID** (UUID) | `50ffb074-7eca-41d3-9914-28107902521d` |
+| `levelplay_interstitial_ad_unit_id` | Placements → Interstitial → **Placement ID** | `59b948e3-4518-4621-a6d1-792ee491534f` |
+
+Older ViralSnap apps (BingoX, HelixEmpire) use names like `Rewarded_Android` instead of UUIDs — Play N' Earn uses the Monetization dashboard IDs.
 
 ## Test ads
 

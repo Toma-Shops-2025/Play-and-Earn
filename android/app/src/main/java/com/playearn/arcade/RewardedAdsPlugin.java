@@ -30,7 +30,7 @@ import com.unity3d.ads.UnityAdsError;
 public class RewardedAdsPlugin extends Plugin {
 
     private static final String TAG = "RewardedAds";
-    private static final long READY_WAIT_MS = 12_000L;
+    private static final long READY_WAIT_MS = 20_000L;
     private static final long READY_POLL_MS = 250L;
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -47,6 +47,9 @@ public class RewardedAdsPlugin extends Plugin {
 
     @Nullable private RewardedAd rewardedAd;
     @Nullable private InterstitialAd interstitialAd;
+
+    @Nullable private String lastRewardedLoadError;
+    @Nullable private String lastInterstitialLoadError;
 
     private PluginCall pendingRewardedCall;
     private PluginCall pendingInterstitialCall;
@@ -151,10 +154,12 @@ public class RewardedAdsPlugin extends Plugin {
                                 }
                             }
                         );
+                        lastRewardedLoadError = null;
                         Log.d(TAG, "Rewarded placement loaded");
                     } else {
                         rewardedAd = null;
-                        Log.e(TAG, "Rewarded load failed: " + errorMessage(error));
+                        lastRewardedLoadError = errorMessage(error);
+                        Log.e(TAG, "Rewarded load failed: " + lastRewardedLoadError);
                     }
                 }
             }
@@ -188,10 +193,12 @@ public class RewardedAdsPlugin extends Plugin {
                                 }
                             }
                         );
+                        lastInterstitialLoadError = null;
                         Log.d(TAG, "Interstitial placement loaded");
                     } else {
                         interstitialAd = null;
-                        Log.e(TAG, "Interstitial load failed: " + errorMessage(error));
+                        lastInterstitialLoadError = errorMessage(error);
+                        Log.e(TAG, "Interstitial load failed: " + lastInterstitialLoadError);
                     }
                 }
             }
@@ -202,6 +209,9 @@ public class RewardedAdsPlugin extends Plugin {
     public void isRewardedAdReady(PluginCall call) {
         JSObject ret = new JSObject();
         ret.put("ready", unityInitialized && rewardedAd != null);
+        if (lastRewardedLoadError != null && rewardedAd == null) {
+            ret.put("message", lastRewardedLoadError);
+        }
         call.resolve(ret);
     }
 
@@ -229,10 +239,11 @@ public class RewardedAdsPlugin extends Plugin {
                 if (!ready || rewardedAd == null) {
                     JSObject ret = new JSObject();
                     ret.put("rewarded", false);
-                    ret.put(
-                        "message",
-                        "No ad loaded yet. Wait a few seconds on Wi‑Fi and try again."
-                    );
+                    String detail =
+                        lastRewardedLoadError != null
+                            ? lastRewardedLoadError
+                            : "No ad loaded yet. Wait a few seconds on Wi‑Fi and try again.";
+                    ret.put("message", detail);
                     call.resolve(ret);
                     return;
                 }

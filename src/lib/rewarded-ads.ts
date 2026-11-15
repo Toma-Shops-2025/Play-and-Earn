@@ -15,7 +15,7 @@ export type InterstitialAdResult = {
 export interface RewardedAdsPlugin {
   initialize(): Promise<{ ok: boolean; message?: string }>;
   showRewardedAd(): Promise<RewardedAdResult>;
-  isRewardedAdReady(): Promise<{ ready: boolean }>;
+  isRewardedAdReady(): Promise<{ ready: boolean; message?: string }>;
   showInterstitialAd(): Promise<InterstitialAdResult>;
   isInterstitialAdReady(): Promise<{ ready: boolean }>;
 }
@@ -31,21 +31,39 @@ function friendlyAdError(message: string | undefined): string {
   const lower = message.toLowerCase();
   if (lower.includes("bad request") || /\b400\b/.test(message)) {
     return [
-      "Unity Ads rejected the request — use ad unit names (Rewarded_Android / Interstitial_Android),",
-      "Game ID 6218645 in levelplay.xml, package com.playearn.arcade in Unity Cloud, then rebuild the APK.",
+      "Unity Ads rejected the request — check Game ID 6218645 and placement UUIDs in",
+      "android/app/src/main/res/values/levelplay.xml, package com.playearn.arcade in Unity Cloud, rebuild the APK.",
+    ].join(" ");
+  }
+  if (
+    lower.includes("placement not found") ||
+    lower.includes("52102") ||
+    lower.includes("placement id")
+  ) {
+    return [
+      "Unity placement ID not found — in Unity Monetization copy each placement’s Placement ID (UUID)",
+      "into levelplay.xml (not Rewarded_Android; that name only works on older apps like BingoX).",
     ].join(" ");
   }
   return message;
 }
 
-async function waitForRewardedAdReady(maxMs = 12_000): Promise<boolean> {
+async function waitForRewardedAdReady(maxMs = 22_000): Promise<{
+  ready: boolean;
+  message?: string;
+}> {
   const started = Date.now();
+  let lastMessage: string | undefined;
   while (Date.now() - started < maxMs) {
-    const { ready } = await RewardedAds.isRewardedAdReady();
-    if (ready) return true;
+    const status = await RewardedAds.isRewardedAdReady();
+    if (status.message) lastMessage = status.message;
+    if (status.ready) return { ready: true };
     await new Promise((r) => setTimeout(r, 600));
   }
-  return false;
+  return {
+    ready: false,
+    message: lastMessage,
+  };
 }
 
 /** Simulated ad for web dev (15s countdown). */
@@ -58,12 +76,14 @@ export async function showRewardedAdWithFallback(): Promise<RewardedAdResult> {
         message: friendlyAdError(init.message ?? "Ads not configured."),
       };
     }
-    const ready = await waitForRewardedAdReady();
-    if (!ready) {
+    const wait = await waitForRewardedAdReady();
+    if (!wait.ready) {
       return {
         rewarded: false,
-        message:
-          "No rewarded ad loaded yet. Check your connection, wait a few seconds, and try again.",
+        message: friendlyAdError(
+          wait.message ??
+            "No rewarded ad loaded yet. Check your connection, wait a few seconds, and try again."
+        ),
       };
     }
     const result = await RewardedAds.showRewardedAd();

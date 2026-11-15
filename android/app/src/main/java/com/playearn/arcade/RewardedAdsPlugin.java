@@ -94,7 +94,6 @@ public class RewardedAdsPlugin extends Plugin {
             new InitializationConfiguration.Builder(gameId).withTestMode(testMode).build();
 
         UnityAds.initialize(
-            activity.getApplicationContext(),
             configuration,
             new InitializationListener() {
                 @Override

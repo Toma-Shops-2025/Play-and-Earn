@@ -9,19 +9,33 @@ import {
 } from "@/lib/daily-ad-gate";
 import { showRewardedAdWithFallback } from "@/lib/rewarded-ads";
 import { useWallet } from "@/context/wallet-provider";
-import { formatCash, formatSignedRewardFromCoins } from "@/lib/format";
+import {
+  msUntilNextDailyClaim,
+  nextDailyStreakIndex,
+} from "@/lib/daily-streak";
+import { formatCash, formatCountdown, formatSignedRewardFromCoins } from "@/lib/format";
 
 const WEEKLY_REWARDS = ECONOMY.dailyStreakCoins;
 
 export function RewardsView() {
-  const { claimedRewardDays, claimDailyReward, pendingCash } = useWallet();
+  const { claimedRewardDays, lastDailyClaimAt, claimDailyReward, pendingCash } = useWallet();
   const [dailyAdUnlocked, setDailyAdUnlocked] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   const requiresAd = ECONOMY.dailyStreakRequiresRewardedAd;
-  const todayIndex = claimedRewardDays.length;
-  const todayReward = WEEKLY_REWARDS[todayIndex];
+  const nextIndex = nextDailyStreakIndex(claimedRewardDays);
+  const waitMs = msUntilNextDailyClaim(lastDailyClaimAt, now);
+  const nextReady = waitMs === 0;
+  const todayIndex = nextReady ? nextIndex : -1;
+  const todayReward = WEEKLY_REWARDS[nextIndex];
+  const streakComplete = nextIndex >= WEEKLY_REWARDS.length;
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
 
   useEffect(() => {
     setDailyAdUnlocked(!requiresAd || hasDailyAdGateForToday());
@@ -49,9 +63,13 @@ export function RewardsView() {
       <section className="rounded-3xl border border-fuchsia-400/30 bg-gradient-to-br from-fuchsia-600 via-violet-700 to-indigo-800 p-5 text-white shadow-[0_0_36px_rgba(217,70,239,0.35)]">
         <h2 className="text-xl font-extrabold">Daily rewards</h2>
         <p className="mt-1 text-sm text-fuchsia-50/90">
-          {requiresAd
-            ? "Watch one rewarded video, then claim today’s streak cash."
-            : "Check in each day to stack bonus cash."}{" "}
+          {streakComplete
+            ? "This week’s streak is complete."
+            : !nextReady
+              ? `Next reward in ${formatCountdown(Math.ceil(waitMs / 1000))}.`
+              : requiresAd
+                ? "Watch one rewarded video, then claim today’s streak cash."
+                : "Check in each day to stack bonus cash."}{" "}
           Pending: <span className="font-bold text-lime-300">{formatCash(pendingCash)}</span>
         </p>
       </section>
@@ -66,13 +84,14 @@ export function RewardsView() {
         {WEEKLY_REWARDS.map((reward, index) => {
           const claimed = claimedRewardDays.includes(index);
           const isToday = index === todayIndex;
+          const isWaiting = index === nextIndex && !nextReady && !streakComplete;
           const needsAdFirst = requiresAd && isToday && !dailyAdUnlocked && !claimed;
 
           return (
             <div
               key={index}
-              className={`rounded-2xl border p-3 text-center shadow-sm ${
-                isToday
+                className={`rounded-2xl border p-3 text-center shadow-sm ${
+                isToday || isWaiting
                   ? "border-lime-400/60 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.25)]"
                   : "border-white/10 bg-white/5"
               }`}
@@ -97,9 +116,34 @@ export function RewardsView() {
                   size="sm"
                   className="mt-2 w-full"
                   disabled={claimed || !isToday || busy}
-                  onClick={() => void claimDailyReward(index, reward)}
+                  onClick={() => {
+                    setBusy(true);
+                    setMessage(null);
+                    void claimDailyReward(index, reward)
+                      .then((ok) => {
+                        setMessage(
+                          ok
+                            ? `Day ${index + 1} claimed. The next reward unlocks in 24 hours.`
+                            : "That reward is not ready yet.",
+                        );
+                      })
+                      .catch((error: unknown) => {
+                        setMessage(
+                          error instanceof Error
+                            ? error.message
+                            : "That reward is not ready yet.",
+                        );
+                      })
+                      .finally(() => setBusy(false));
+                  }}
                 >
-                  {claimed ? "Claimed" : isToday ? "Claim" : "Locked"}
+                  {claimed
+                    ? "Claimed"
+                    : isWaiting
+                      ? formatCountdown(Math.ceil(waitMs / 1000))
+                      : isToday
+                        ? "Claim"
+                        : "Locked"}
                 </Button>
               )}
             </div>
@@ -107,7 +151,7 @@ export function RewardsView() {
         })}
       </div>
 
-      {requiresAd && todayReward !== undefined && !claimedRewardDays.includes(todayIndex) ? (
+      {requiresAd && nextReady && todayReward !== undefined && !claimedRewardDays.includes(nextIndex) ? (
         <p className="text-center text-xs text-violet-200/70">
           Today’s bonus: {formatSignedRewardFromCoins(todayReward)} after{" "}
           {dailyAdUnlocked ? "claiming" : "watching an ad"}.

@@ -35,6 +35,7 @@ import {
 } from "@/lib/conversion";
 import { APP_CONFIG } from "@/lib/app-config";
 import { getLocalAdStats, grantLocalAdReward } from "@/lib/ad-rewards-local";
+import { canClaimDailyStreak } from "@/lib/daily-streak";
 import { formatCash, formatSignedRewardFromCoins } from "@/lib/money";
 import {
   loadPayoutDestination,
@@ -68,6 +69,8 @@ type WalletState = {
   conversionDueAt: string;
   withdrawals: Withdrawal[];
   claimedRewardDays: number[];
+  /** ISO time of the latest streak claim. The next day unlocks 24 hours later. */
+  lastDailyClaimAt: string | null;
 };
 
 type WalletContextValue = WalletState & {
@@ -107,6 +110,7 @@ const defaultState: WalletState = {
   secondsUntilConversion: secondsUntilConversionDue(defaultConversionDueAt),
   withdrawals: [],
   claimedRewardDays: [0, 1],
+  lastDailyClaimAt: null,
 };
 
 const WalletContext = createContext<WalletContextValue | null>(null);
@@ -182,6 +186,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         conversionDueAt: dueAt,
         withdrawals: cloud.withdrawals,
         claimedRewardDays: cloud.claimedRewardDays,
+        lastDailyClaimAt: cloud.lastDailyClaimAt,
       };
     });
     setAdStats({
@@ -421,20 +426,47 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const claimDailyReward = useCallback(
     async (dayIndex: number, coins: number) => {
+      if (
+        !canClaimDailyStreak({
+          claimedRewardDays: state.claimedRewardDays,
+          dayIndex,
+          lastDailyClaimAt: state.lastDailyClaimAt,
+          coins,
+        })
+      ) {
+        return false;
+      }
       if (cloudActive) {
         const ok = await cloudClaimDailyReward(dayIndex, coins);
         if (ok) await refreshWallet();
         return ok;
       }
-      if (state.claimedRewardDays.includes(dayIndex)) return false;
-      setState((prev) => ({
-        ...prev,
-        coins: prev.coins + coins,
-        claimedRewardDays: [...prev.claimedRewardDays, dayIndex],
-      }));
+      setState((prev) => {
+        if (
+          !canClaimDailyStreak({
+            claimedRewardDays: prev.claimedRewardDays,
+            dayIndex,
+            lastDailyClaimAt: prev.lastDailyClaimAt,
+            coins,
+          })
+        ) {
+          return prev;
+        }
+        return {
+          ...prev,
+          coins: prev.coins + coins,
+          claimedRewardDays: [...prev.claimedRewardDays, dayIndex],
+          lastDailyClaimAt: new Date().toISOString(),
+        };
+      });
       return true;
     },
-    [cloudActive, refreshWallet, state.claimedRewardDays],
+    [
+      cloudActive,
+      refreshWallet,
+      state.claimedRewardDays,
+      state.lastDailyClaimAt,
+    ],
   );
 
   const conversionProgress = useMemo(

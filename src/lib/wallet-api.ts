@@ -12,6 +12,7 @@ export type CloudWalletPayload = {
   cashBalance: number;
   secondsUntilConversion: number;
   claimedRewardDays: number[];
+  lastDailyClaimAt: string | null;
   withdrawals: Withdrawal[];
   adsWatchedToday: number;
   adsRemainingToday: number;
@@ -38,6 +39,7 @@ export async function fetchCloudWallet(): Promise<CloudWalletPayload | null> {
     cashBalance: number | string;
     secondsUntilConversion: number;
     claimedRewardDays: number[];
+    lastDailyClaimAt?: string | null;
     withdrawals: Array<{
       id: string;
       amount: number | string;
@@ -58,6 +60,7 @@ export async function fetchCloudWallet(): Promise<CloudWalletPayload | null> {
     cashBalance: Number(raw.cashBalance),
     secondsUntilConversion: raw.secondsUntilConversion,
     claimedRewardDays: raw.claimedRewardDays ?? [],
+    lastDailyClaimAt: raw.lastDailyClaimAt ?? null,
     withdrawals: (raw.withdrawals ?? []).map((w) => ({
       id: w.id,
       amount: Number(w.amount),

@@ -16,7 +16,7 @@ export interface RewardedAdsPlugin {
   initialize(): Promise<{ ok: boolean; message?: string }>;
   preloadAds(): Promise<void>;
   showRewardedAd(): Promise<RewardedAdResult>;
-  isRewardedAdReady(): Promise<{ ready: boolean }>;
+  isRewardedAdReady(): Promise<{ ready: boolean; status?: string }>;
   showInterstitialAd(): Promise<InterstitialAdResult>;
   isInterstitialAdReady(): Promise<{ ready: boolean }>;
 }
@@ -37,18 +37,6 @@ function friendlyAdError(message: string | undefined): string {
     ].join(" ");
   }
   return message;
-}
-
-async function waitForRewardedAdReady(maxMs = 20_000): Promise<boolean> {
-  const started = Date.now();
-  await RewardedAds.preloadAds();
-  while (Date.now() - started < maxMs) {
-    const { ready } = await RewardedAds.isRewardedAdReady();
-    if (ready) return true;
-    await RewardedAds.preloadAds();
-    await new Promise((r) => setTimeout(r, 400));
-  }
-  return false;
 }
 
 /** Warm Unity rewarded (and interstitial) inventory early — call on app open. */
@@ -73,15 +61,19 @@ export async function showRewardedAdWithFallback(): Promise<RewardedAdResult> {
         message: friendlyAdError(init.message ?? "Ads not configured."),
       };
     }
-    const ready = await waitForRewardedAdReady();
-    if (!ready) {
+    await RewardedAds.preloadAds();
+    const result = await RewardedAds.showRewardedAd();
+    if (!result.rewarded) {
+      const status = result.message
+        ? friendlyAdError(result.message)
+        : (await RewardedAds.isRewardedAdReady()).status;
       return {
         rewarded: false,
         message:
-          "No rewarded ad loaded yet. Check your connection, wait a few seconds, and try again.",
+          status ??
+          "Could not load a rewarded ad. Check your connection and try again in a minute.",
       };
     }
-    const result = await RewardedAds.showRewardedAd();
     return {
       ...result,
       message: result.message ? friendlyAdError(result.message) : result.message,

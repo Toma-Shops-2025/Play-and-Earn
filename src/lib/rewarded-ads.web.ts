@@ -12,7 +12,9 @@ export class RewardedAdsWeb implements RewardedAdsPlugin {
     };
   }
 
-  async isRewardedAdReady(): Promise<{ ready: boolean }> {
+  async preloadAds(): Promise<void> {}
+
+  async isRewardedAdReady(): Promise<{ ready: boolean; status?: string }> {
     return { ready: true };
   }
 

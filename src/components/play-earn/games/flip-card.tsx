@@ -122,16 +122,26 @@ function FlipFace({
 }
 
 export function FlipCardGame({ onClose }: { onClose: () => void }) {
-  const { addCoins } = useWallet();
+  const { addCoins, playsRemainingForGame } = useWallet();
   const prizes = useMemo(() => shuffle(DECK), []);
   const [picked, setPicked] = useState<number | null>(null);
   const [revealAll, setRevealAll] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   function pick(index: number) {
     if (picked !== null) return;
     setPicked(index);
-    void addCoins("flip", prizes[index]);
-    window.setTimeout(() => setRevealAll(true), 500);
+    setError(null);
+    void (async () => {
+      try {
+        await addCoins("flip", prizes[index]);
+        window.setTimeout(() => setRevealAll(true), 500);
+      } catch (e) {
+        setPicked(null);
+        setError(e instanceof Error ? e.message : "Reward could not be added.");
+      }
+    })();
   }
 
   return (
@@ -155,13 +165,19 @@ export function FlipCardGame({ onClose }: { onClose: () => void }) {
         })}
       </div>
 
+      {error ? (
+        <p className="rounded-xl border border-rose-300 bg-rose-50 px-3 py-2 text-center text-sm text-rose-900">
+          {error}
+        </p>
+      ) : null}
       {picked !== null ? (
         <p className="rounded-xl bg-amber-50 px-3 py-2 text-center text-sm font-bold text-amber-900">
           You flipped {formatSignedRewardFromCoins(prizes[picked])}!
         </p>
       ) : (
         <p className="text-center text-xs text-slate-500">
-          Pick one card — prizes are shuffled every round.
+          Pick one card — prizes are shuffled every round. {playsRemainingForGame("flip")} plays
+          left today.
         </p>
       )}
 

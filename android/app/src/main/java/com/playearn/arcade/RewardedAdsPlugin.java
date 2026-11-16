@@ -30,8 +30,10 @@ import com.unity3d.ads.UnityAdsError;
 public class RewardedAdsPlugin extends Plugin {
 
     private static final String TAG = "RewardedAds";
-    private static final long READY_WAIT_MS = 12_000L;
-    private static final long READY_POLL_MS = 250L;
+    private static final long READY_WAIT_MS = 35_000L;
+    private static final long READY_POLL_MS = 300L;
+    private static final long LOAD_RETRY_MS = 3_000L;
+    private static final int MAX_LOAD_RETRIES = 8;
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -47,6 +49,13 @@ public class RewardedAdsPlugin extends Plugin {
 
     @Nullable private RewardedAd rewardedAd;
     @Nullable private InterstitialAd interstitialAd;
+
+    private boolean rewardedLoadInProgress = false;
+    private boolean interstitialLoadInProgress = false;
+    private int rewardedLoadAttempts = 0;
+
+    @Nullable private String lastRewardedLoadError;
+    @Nullable private String lastInitError;
 
     private PluginCall pendingRewardedCall;
     private PluginCall pendingInterstitialCall;
@@ -76,6 +85,7 @@ public class RewardedAdsPlugin extends Plugin {
         }
 
         if (unityInitialized) {
+            ensureAdsLoading();
             JSObject ret = new JSObject();
             ret.put("ok", true);
             call.resolve(ret);
@@ -107,6 +117,7 @@ public class RewardedAdsPlugin extends Plugin {
                         Log.i(TAG, "Unity Ads initialized (testMode=" + testMode + ")");
                     } else {
                         String msg = "Unity Ads init failed: " + errorMessage(error);
+                        lastInitError = msg;
                         Log.e(TAG, msg);
                         finishInitCalls(false, msg);
                     }
@@ -127,10 +138,35 @@ public class RewardedAdsPlugin extends Plugin {
         pendingInitCalls.clear();
     }
 
+    private void ensureAdsLoading() {
+        if (rewardedAd == null) {
+            loadRewarded();
+        }
+        if (interstitialAd == null) {
+            loadInterstitial();
+        }
+    }
+
+    @PluginMethod
+    public void preloadAds(PluginCall call) {
+        if (unityInitialized) {
+            rewardedLoadAttempts = 0;
+            ensureAdsLoading();
+        }
+        call.resolve();
+    }
+
     private void loadRewarded() {
+        if (!unityInitialized) {
+            return;
+        }
         if (rewardedPlacementId == null || rewardedPlacementId.contains("REPLACE")) {
             return;
         }
+        if (rewardedAd != null || rewardedLoadInProgress) {
+            return;
+        }
+        rewardedLoadInProgress = true;
         LoadConfiguration config = new LoadConfiguration.Builder(rewardedPlacementId).build();
 
         RewardedAd.load(
@@ -138,8 +174,11 @@ public class RewardedAdsPlugin extends Plugin {
             new LoadListener<RewardedAd>() {
                 @Override
                 public void onAdLoaded(@Nullable RewardedAd ad, @Nullable UnityAdsError error) {
+                    rewardedLoadInProgress = false;
                     if (ad != null) {
                         rewardedAd = ad;
+                        rewardedLoadAttempts = 0;
+                        lastRewardedLoadError = null;
                         ad.setOnAdExpired(
                             new AdExpiredListener<RewardedAd>() {
                                 @Override
@@ -154,17 +193,34 @@ public class RewardedAdsPlugin extends Plugin {
                         Log.d(TAG, "Rewarded placement loaded");
                     } else {
                         rewardedAd = null;
-                        Log.e(TAG, "Rewarded load failed: " + errorMessage(error));
+                        lastRewardedLoadError = errorMessage(error);
+                        Log.e(TAG, "Rewarded load failed: " + lastRewardedLoadError);
+                        scheduleRewardedReload();
                     }
                 }
             }
         );
     }
 
+    private void scheduleRewardedReload() {
+        if (rewardedLoadAttempts >= MAX_LOAD_RETRIES) {
+            return;
+        }
+        rewardedLoadAttempts += 1;
+        mainHandler.postDelayed(this::loadRewarded, LOAD_RETRY_MS);
+    }
+
     private void loadInterstitial() {
+        if (!unityInitialized) {
+            return;
+        }
         if (interstitialPlacementId == null || interstitialPlacementId.contains("REPLACE")) {
             return;
         }
+        if (interstitialAd != null || interstitialLoadInProgress) {
+            return;
+        }
+        interstitialLoadInProgress = true;
         LoadConfiguration config = new LoadConfiguration.Builder(interstitialPlacementId).build();
 
         InterstitialAd.load(
@@ -175,6 +231,7 @@ public class RewardedAdsPlugin extends Plugin {
                     @Nullable InterstitialAd ad,
                     @Nullable UnityAdsError error
                 ) {
+                    interstitialLoadInProgress = false;
                     if (ad != null) {
                         interstitialAd = ad;
                         ad.setOnAdExpired(
@@ -202,6 +259,15 @@ public class RewardedAdsPlugin extends Plugin {
     public void isRewardedAdReady(PluginCall call) {
         JSObject ret = new JSObject();
         ret.put("ready", unityInitialized && rewardedAd != null);
+        if (!unityInitialized && lastInitError != null) {
+            ret.put("status", lastInitError);
+        } else if (rewardedAd == null && lastRewardedLoadError != null) {
+            ret.put("status", lastRewardedLoadError);
+        } else if (!unityInitialized) {
+            ret.put("status", "Unity Ads is still starting…");
+        } else if (rewardedAd == null) {
+            ret.put("status", "Loading rewarded ad…");
+        }
         call.resolve(ret);
     }
 
@@ -229,9 +295,17 @@ public class RewardedAdsPlugin extends Plugin {
                 if (!ready || rewardedAd == null) {
                     JSObject ret = new JSObject();
                     ret.put("rewarded", false);
+                    String detail =
+                        lastRewardedLoadError != null
+                            ? lastRewardedLoadError
+                            : lastInitError != null
+                                ? lastInitError
+                                : "No ad inventory yet.";
                     ret.put(
                         "message",
-                        "No ad loaded yet. Wait a few seconds on Wi‑Fi and try again."
+                        "Could not load a rewarded ad. "
+                            + detail
+                            + " Check Wi‑Fi or cellular, then try again."
                     );
                     call.resolve(ret);
                     return;
@@ -412,6 +486,7 @@ public class RewardedAdsPlugin extends Plugin {
 
         triggerLoad.run();
         final long deadline = System.currentTimeMillis() + READY_WAIT_MS;
+        final long[] nextRetryAt = { System.currentTimeMillis() + LOAD_RETRY_MS };
 
         Runnable poll =
             new Runnable() {
@@ -424,6 +499,10 @@ public class RewardedAdsPlugin extends Plugin {
                     if (System.currentTimeMillis() >= deadline) {
                         callback.onResult(false);
                         return;
+                    }
+                    if (System.currentTimeMillis() >= nextRetryAt[0]) {
+                        triggerLoad.run();
+                        nextRetryAt[0] = System.currentTimeMillis() + LOAD_RETRY_MS;
                     }
                     mainHandler.postDelayed(this, READY_POLL_MS);
                 }

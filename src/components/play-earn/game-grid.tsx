@@ -17,8 +17,10 @@ import { ECONOMY } from "@/lib/economy-config";
 import { APP_CONFIG } from "@/lib/app-config";
 import { registerGameOpen } from "@/lib/game-session-ads";
 import { showInterstitialWithFallback } from "@/lib/rewarded-ads";
+import { useWallet } from "@/context/wallet-provider";
 
 export function GameGrid({ compact = false }: { compact?: boolean }) {
+  const { playsRemainingForGame } = useWallet();
   const [openGame, setOpenGame] = useState<GameId | null>(null);
   const [adBusy, setAdBusy] = useState(false);
 
@@ -41,7 +43,8 @@ export function GameGrid({ compact = false }: { compact?: boolean }) {
   return (
     <>
       <p className="text-center text-[11px] text-violet-200/65">
-        A short ad may play every {ECONOMY.gamesBetweenInterstitials} mini-games (Android).
+        Up to {ECONOMY.maxGamePlaysPerDay} plays per game per day · a short ad may play every{" "}
+        {ECONOMY.gamesBetweenInterstitials} opens (Android).
       </p>
       <div
         className={
@@ -60,7 +63,9 @@ export function GameGrid({ compact = false }: { compact?: boolean }) {
                 <h3 className="text-lg font-extrabold text-white drop-shadow">
                   {game.title}
                 </h3>
-                <p className="text-xs text-white/85">{game.subtitle}</p>
+                <p className="text-xs text-white/85">
+                  {game.subtitle} · {playsRemainingForGame(game.id)} left today
+                </p>
               </div>
               <span className="text-3xl" aria-hidden>{game.emoji}</span>
             </div>

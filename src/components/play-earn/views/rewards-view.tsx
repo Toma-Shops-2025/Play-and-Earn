@@ -7,7 +7,7 @@ import {
   hasDailyAdGateForToday,
   setDailyAdGateForToday,
 } from "@/lib/daily-ad-gate";
-import { showRewardedAdWithFallback } from "@/lib/rewarded-ads";
+import { preloadRewardedAds, showRewardedAdWithFallback } from "@/lib/rewarded-ads";
 import { useWallet } from "@/context/wallet-provider";
 import {
   msUntilNextDailyClaim,
@@ -31,6 +31,10 @@ export function RewardsView() {
   const todayIndex = nextReady ? nextIndex : -1;
   const todayReward = WEEKLY_REWARDS[nextIndex];
   const streakComplete = nextIndex >= WEEKLY_REWARDS.length;
+
+  useEffect(() => {
+    void preloadRewardedAds();
+  }, []);
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 1000);

@@ -44,7 +44,7 @@ function paintCover(ctx: CanvasRenderingContext2D) {
 }
 
 export function ScratchCardGame({ onClose }: { onClose: () => void }) {
-  const { addCoins } = useWallet();
+  const { addCoins, playsRemainingForGame } = useWallet();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scratching = useRef(false);
   const credited = useRef(false);
@@ -52,6 +52,7 @@ export function ScratchCardGame({ onClose }: { onClose: () => void }) {
   const [revealed, setRevealed] = useState(false);
   const [scratchedPct, setScratchedPct] = useState(0);
   const [ready, setReady] = useState(false);
+  const [grantError, setGrantError] = useState<string | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -99,7 +100,13 @@ export function ScratchCardGame({ onClose }: { onClose: () => void }) {
     if (ratio >= REVEAL_AT && !credited.current) {
       credited.current = true;
       setRevealed(true);
-      void addCoins("scratch", prize);
+      void addCoins("scratch", prize).catch((error: unknown) => {
+        credited.current = false;
+        setRevealed(false);
+        setGrantError(
+          error instanceof Error ? error.message : "Reward could not be added.",
+        );
+      });
     }
   }
 
@@ -153,10 +160,15 @@ export function ScratchCardGame({ onClose }: { onClose: () => void }) {
         ) : null}
       </div>
 
+      {grantError ? (
+        <p className="rounded-xl border border-rose-300 bg-rose-50 px-3 py-2 text-center text-sm text-rose-900">
+          {grantError}
+        </p>
+      ) : null}
       <p className="text-center text-sm text-slate-600">
         {revealed
           ? `Prize revealed: ${formatSignedRewardFromCoins(prize)} added!`
-          : `Scratch ${scratchedPct}% · uncover ~${Math.round(REVEAL_AT * 100)}% to claim`}
+          : `Scratch ${scratchedPct}% · uncover ~${Math.round(REVEAL_AT * 100)}% to claim · ${playsRemainingForGame("scratch")} plays left today`}
       </p>
       <Button type="button" variant="outline" className="w-full" onClick={onClose}>
         Done

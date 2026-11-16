@@ -48,7 +48,7 @@ function segmentPath(index: number, total: number) {
 }
 
 export function LuckySpin({ onClose }: { onClose: () => void }) {
-  const { addCoins } = useWallet();
+  const { addCoins, playsRemainingForGame } = useWallet();
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -184,7 +184,8 @@ export function LuckySpin({ onClose }: { onClose: () => void }) {
         </p>
       ) : (
         <p className="text-center text-xs text-slate-500">
-          Tap Spin — land on a slice to win cash.
+          Tap Spin — land on a slice to win cash. {playsRemainingForGame("spin")} plays left
+          today.
         </p>
       )}
 

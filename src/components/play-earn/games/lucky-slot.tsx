@@ -81,7 +81,7 @@ function Reel({
 }
 
 export function LuckySlot({ onClose }: { onClose: () => void }) {
-  const { addCoins } = useWallet();
+  const { addCoins, playsRemainingForGame } = useWallet();
   const [reels, setReels] = useState<Symbol[]>(["🍒", "🍋", "⭐"]);
   const [spinning, setSpinning] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -99,13 +99,20 @@ export function LuckySlot({ onClose }: { onClose: () => void }) {
       setSpinning(false);
       const prize = prizeFor(final);
       if (prize > 0) {
-        void addCoins("slot", prize);
-        setJackpotPulse(prize >= 5);
-        setMessage(
-          prize >= 5
-            ? `Jackpot! ${formatSignedRewardFromCoins(prize)}`
-            : `Nice hit — ${formatSignedRewardFromCoins(prize)}`,
-        );
+        void addCoins("slot", prize)
+          .then(() => {
+            setJackpotPulse(prize >= 5);
+            setMessage(
+              prize >= 5
+                ? `Jackpot! ${formatSignedRewardFromCoins(prize)}`
+                : `Nice hit — ${formatSignedRewardFromCoins(prize)}`,
+            );
+          })
+          .catch((error: unknown) => {
+            setMessage(
+              error instanceof Error ? error.message : "Reward could not be added.",
+            );
+          });
       } else {
         setMessage("No luck this time — try again!");
       }
@@ -175,7 +182,8 @@ export function LuckySlot({ onClose }: { onClose: () => void }) {
         </p>
       ) : (
         <p className="text-center text-xs text-slate-500">
-          Pull the lever — 2 match pays {formatSignedRewardFromCoins(3)}, 3 match = jackpot.
+          Pull the lever — 2 match pays {formatSignedRewardFromCoins(3)}, 3 match = jackpot.{" "}
+          {playsRemainingForGame("slot")} plays left today.
         </p>
       )}
 

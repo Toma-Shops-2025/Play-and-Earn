@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { PlayCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { REWARDED_AD_CONFIG } from "@/lib/ads-config";
-import { formatAdRewardLabel, showRewardedAdWithFallback } from "@/lib/rewarded-ads";
+import {
+  formatAdRewardLabel,
+  preloadRewardedAds,
+  showRewardedAdWithFallback,
+} from "@/lib/rewarded-ads";
 import { useAuth } from "@/context/auth-provider";
 import { useWallet } from "@/context/wallet-provider";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -20,7 +24,7 @@ export function WatchAdView() {
   const cloudRequired = isSupabaseConfigured();
 
   useEffect(() => {
-    void import("@/lib/rewarded-ads").then(({ RewardedAds }) => RewardedAds.initialize());
+    void preloadRewardedAds();
   }, []);
 
   async function watchAd() {

@@ -14,6 +14,7 @@ export type InterstitialAdResult = {
 
 export interface RewardedAdsPlugin {
   initialize(): Promise<{ ok: boolean; message?: string }>;
+  preloadAds(): Promise<void>;
   showRewardedAd(): Promise<RewardedAdResult>;
   isRewardedAdReady(): Promise<{ ready: boolean }>;
   showInterstitialAd(): Promise<InterstitialAdResult>;
@@ -38,14 +39,28 @@ function friendlyAdError(message: string | undefined): string {
   return message;
 }
 
-async function waitForRewardedAdReady(maxMs = 12_000): Promise<boolean> {
+async function waitForRewardedAdReady(maxMs = 20_000): Promise<boolean> {
   const started = Date.now();
+  await RewardedAds.preloadAds();
   while (Date.now() - started < maxMs) {
     const { ready } = await RewardedAds.isRewardedAdReady();
     if (ready) return true;
-    await new Promise((r) => setTimeout(r, 600));
+    await RewardedAds.preloadAds();
+    await new Promise((r) => setTimeout(r, 400));
   }
   return false;
+}
+
+/** Warm Unity rewarded (and interstitial) inventory early — call on app open. */
+export async function preloadRewardedAds(): Promise<void> {
+  try {
+    const init = await RewardedAds.initialize();
+    if (init.ok) {
+      await RewardedAds.preloadAds();
+    }
+  } catch {
+    // Web dev without Capacitor — ignore
+  }
 }
 
 /** Simulated ad for web dev (15s countdown). */

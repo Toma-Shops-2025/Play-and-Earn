@@ -13,7 +13,9 @@ export function GamesView() {
         </h2>
         <p className="text-sm text-violet-200/75">
           Arcade portals pay {formatSignedRewardFromCoins(ECONOMY.portalPlay.coinsPerMinute)}{" "}
-          per minute. Mini-games add extra cash. Everything cashes out on the 3-hour timer.
+          per minute (max {ECONOMY.portalPlay.maxMinutesPerDay} min/day). Each mini-game allows up
+          to {ECONOMY.maxGamePlaysPerDay} rewarded plays per UTC day. Cash moves to your balance on
+          the 3-hour timer.
         </p>
       </header>
       <GamePortals />

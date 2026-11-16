@@ -76,6 +76,7 @@ public class RewardedAdsPlugin extends Plugin {
         }
 
         if (unityInitialized) {
+            ensureAdsLoading();
             JSObject ret = new JSObject();
             ret.put("ok", true);
             call.resolve(ret);
@@ -125,6 +126,23 @@ public class RewardedAdsPlugin extends Plugin {
             pending.resolve(ret);
         }
         pendingInitCalls.clear();
+    }
+
+    private void ensureAdsLoading() {
+        if (rewardedAd == null) {
+            loadRewarded();
+        }
+        if (interstitialAd == null) {
+            loadInterstitial();
+        }
+    }
+
+    @PluginMethod
+    public void preloadAds(PluginCall call) {
+        if (unityInitialized) {
+            ensureAdsLoading();
+        }
+        call.resolve();
     }
 
     private void loadRewarded() {

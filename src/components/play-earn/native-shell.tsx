@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
+import { preloadRewardedAds } from "@/lib/rewarded-ads";
 
 /** Applies Android status bar styling when running inside Capacitor. */
 export function NativeShell() {
+  useEffect(() => {
+    void preloadRewardedAds();
+  }, []);
+
   useEffect(() => {
     void (async () => {
       try {

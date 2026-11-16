@@ -138,7 +138,14 @@ export async function cloudGrantGameCoins(
     p_game_id: gameId,
     p_amount: amount,
   });
-  if (error) throw error;
+  if (error) {
+    if (error.message.toLowerCase().includes("daily game limit")) {
+      throw new Error(
+        "Daily limit reached for this game. Come back tomorrow.",
+      );
+    }
+    throw error;
+  }
 }
 
 export async function cloudClaimDailyReward(

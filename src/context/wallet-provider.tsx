@@ -35,6 +35,11 @@ import {
 } from "@/lib/conversion";
 import { APP_CONFIG } from "@/lib/app-config";
 import { getLocalAdStats, grantLocalAdReward } from "@/lib/ad-rewards-local";
+import {
+  assertCanPlayGame,
+  getGamePlaysRemaining,
+  recordGamePlay,
+} from "@/lib/game-rewards-local";
 import { canClaimDailyStreak } from "@/lib/daily-streak";
 import { formatCash, formatSignedRewardFromCoins } from "@/lib/money";
 import {
@@ -80,6 +85,7 @@ type WalletContextValue = WalletState & {
   activeTab: TabId;
   setActiveTab: (tab: TabId) => void;
   addCoins: (gameId: GameId, amount: number) => Promise<void>;
+  playsRemainingForGame: (gameId: GameId) => number;
   grantPortalPlay: (portalId: PortalId, minutes: number) => Promise<PortalSettleResult>;
   grantAdReward: () => Promise<{ ok: boolean; message: string }>;
   lastEarnNotice: string | null;
@@ -306,14 +312,24 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     return { ok: result.ok, message: result.message };
   }, [cloudActive, refreshWallet]);
 
+  const playsRemainingForGame = useCallback((gameId: GameId) => {
+    return getGamePlaysRemaining(gameId);
+  }, []);
+
   const addCoins = useCallback(
     async (gameId: GameId, amount: number) => {
       if (amount <= 0) return;
+      if (amount > ECONOMY.maxCoinsPerGameGrant) {
+        throw new Error("Invalid reward amount.");
+      }
+      assertCanPlayGame(gameId);
       if (cloudActive) {
         await cloudGrantGameCoins(gameId, amount);
+        recordGamePlay(gameId);
         await refreshWallet();
         return;
       }
+      recordGamePlay(gameId);
       setState((prev) => ({ ...prev, coins: prev.coins + amount }));
     },
     [cloudActive, refreshWallet],
@@ -502,6 +518,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       activeTab,
       setActiveTab,
       addCoins,
+      playsRemainingForGame,
       grantPortalPlay,
       grantAdReward,
       cashout,
@@ -522,6 +539,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       mode,
       activeTab,
       addCoins,
+      playsRemainingForGame,
       grantPortalPlay,
       grantAdReward,
       cashout,

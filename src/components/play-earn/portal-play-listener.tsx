@@ -3,8 +3,9 @@
 import { useEffect, useRef } from "react";
 import { useWallet } from "@/context/wallet-provider";
 import {
-  consumePortalMinutes,
+  clearPortalSession,
   peekPortalSession,
+  previewPortalMinutes,
 } from "@/lib/portal-session";
 import { getPortal } from "@/lib/portals";
 
@@ -23,16 +24,47 @@ export function PortalPlayListener() {
 
       busy.current = true;
       try {
-        const consumed = consumePortalMinutes();
-        if (consumed.reason === "none" || !consumed.portalId) return;
-        if (consumed.reason === "abandoned") return;
-        if (consumed.reason === "too_short") {
-          flashEarnNotice("Play at least 1 minute in the arcade to earn cash.");
+        const preview = previewPortalMinutes();
+        if (preview.reason === "none" || !preview.portalId) return;
+
+        if (preview.reason === "abandoned") {
+          clearPortalSession();
           return;
         }
-        const portal = getPortal(consumed.portalId);
-        if (!portal) return;
-        await grantPortalPlay(consumed.portalId, consumed.minutesRequested);
+        if (preview.reason === "too_short") {
+          flashEarnNotice("Play at least 1 minute in the arcade to earn cash.");
+          clearPortalSession();
+          return;
+        }
+
+        const portal = getPortal(preview.portalId);
+        if (!portal) {
+          clearPortalSession();
+          return;
+        }
+
+        const result = await grantPortalPlay(
+          preview.portalId,
+          preview.minutesRequested,
+        );
+        if (result.ok && result.coinsGranted > 0) {
+          clearPortalSession();
+          return;
+        }
+        if (
+          !result.ok &&
+          (result.message?.toLowerCase().includes("cap reached") ||
+            result.message?.includes("migration"))
+        ) {
+          clearPortalSession();
+        }
+        if (
+          !result.ok &&
+          result.message &&
+          !result.message.includes("migration")
+        ) {
+          flashEarnNotice(result.message);
+        }
       } finally {
         busy.current = false;
       }
@@ -44,13 +76,20 @@ export function PortalPlayListener() {
     void (async () => {
       const { Capacitor } = await import("@capacitor/core");
       if (cancelled) return;
+
+      const { App } = await import("@capacitor/app");
+      const resumeHandle = await App.addListener("resume", () => {
+        void settle(true);
+      });
+
       if (Capacitor.isNativePlatform()) {
         const { Browser } = await import("@capacitor/browser");
-        const handle = await Browser.addListener("browserFinished", () => {
+        const browserHandle = await Browser.addListener("browserFinished", () => {
           void settle(true);
         });
         removeNative = () => {
-          void handle.remove();
+          void resumeHandle.remove();
+          void browserHandle.remove();
         };
         return;
       }
@@ -61,6 +100,7 @@ export function PortalPlayListener() {
       document.addEventListener("visibilitychange", onVisible);
       window.addEventListener("focus", onVisible);
       removeNative = () => {
+        void resumeHandle.remove();
         document.removeEventListener("visibilitychange", onVisible);
         window.removeEventListener("focus", onVisible);
       };

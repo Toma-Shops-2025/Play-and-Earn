@@ -23,6 +23,8 @@ export type PortalSettleResult = {
   coinsGranted: number;
   minutesRemainingToday: number;
   message: string;
+  /** Server pending coin balance after grant (cloud wallets). */
+  balance?: number;
 };
 
 function todayUtc(): string {
@@ -88,16 +90,13 @@ function consumeSession(): PortalSession | null {
   return session;
 }
 
-export function consumePortalMinutes(): {
+type PortalMinutesEvaluation = {
   portalId: PortalId | null;
   minutesRequested: number;
   reason: "none" | "too_short" | "abandoned" | "ok";
-} {
-  const session = consumeSession();
-  if (!session) {
-    return { portalId: null, minutesRequested: 0, reason: "none" };
-  }
+};
 
+function evaluateSession(session: PortalSession): PortalMinutesEvaluation {
   const elapsed = Date.now() - session.startedAt;
   if (elapsed > ECONOMY.portalPlay.ignoreSessionsLongerThanMs) {
     return { portalId: session.portalId, minutesRequested: 0, reason: "abandoned" };
@@ -112,6 +111,33 @@ export function consumePortalMinutes(): {
   return { portalId: session.portalId, minutesRequested, reason: "ok" };
 }
 
+/** Inspect an open portal session without clearing it (settle after a successful grant). */
+export function previewPortalMinutes(): PortalMinutesEvaluation {
+  const session = peekPortalSession();
+  if (!session) {
+    return { portalId: null, minutesRequested: 0, reason: "none" };
+  }
+  return evaluateSession(session);
+}
+
+/** Legacy helper — clears the session immediately. Prefer preview + clearPortalSession. */
+export function consumePortalMinutes(): PortalMinutesEvaluation {
+  const session = consumeSession();
+  if (!session) {
+    return { portalId: null, minutesRequested: 0, reason: "none" };
+  }
+  return evaluateSession(session);
+}
+
+export function formatPortalEarnMessage(
+  portalId: PortalId,
+  coinsGranted: number,
+  minutesGranted: number,
+): string {
+  const portal = getPortal(portalId);
+  return `${formatSignedRewardFromCoins(coinsGranted)} for ${minutesGranted} min in ${portal?.title ?? "arcade"}`;
+}
+
 /** Apply the local daily cap and return coins for local (unsigned) wallets. */
 export function grantLocalPortalPlay(
   portalId: PortalId,
@@ -124,7 +150,6 @@ export function grantLocalPortalPlay(
     ECONOMY.portalPlay.maxMinutesPerSession,
   );
   const coinsGranted = minutesGranted * ECONOMY.portalPlay.coinsPerMinute;
-  const portal = getPortal(portalId);
 
   if (minutesGranted <= 0) {
     const message =
@@ -152,7 +177,7 @@ export function grantLocalPortalPlay(
     minutesGranted,
     coinsGranted,
     minutesRemainingToday: remainingPortalMinutesToday(),
-    message: `${formatSignedRewardFromCoins(coinsGranted)} for ${minutesGranted} min in ${portal?.title ?? "arcade"}`,
+    message: formatPortalEarnMessage(portalId, coinsGranted, minutesGranted),
   };
 }
 

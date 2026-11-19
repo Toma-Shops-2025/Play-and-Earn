@@ -23,6 +23,7 @@ import {
   requiredCashoutMinimum,
 } from "@/lib/economy-config";
 import {
+  formatPortalEarnMessage,
   grantLocalPortalPlay,
   noteLocalPortalMinutes,
   type PortalSettleResult,
@@ -340,21 +341,41 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       if (cloudActive) {
         try {
           const result = await cloudGrantPortalPlay(portalId, minutes);
-          if (result.ok && result.minutesGranted > 0) {
+          if (result.ok && result.coinsGranted > 0) {
             noteLocalPortalMinutes(result.minutesGranted);
+            const notice = formatPortalEarnMessage(
+              portalId,
+              result.coinsGranted,
+              result.minutesGranted,
+            );
+            setLastEarnNotice(notice);
+            setState((prev) => ({
+              ...prev,
+              coins:
+                result.balance !== undefined
+                  ? result.balance
+                  : prev.coins + result.coinsGranted,
+            }));
+          } else if (result.message) {
+            setLastEarnNotice(result.message);
           }
           await refreshWallet();
-          if (result.message) setLastEarnNotice(result.message);
           return result;
-        } catch {
+        } catch (e) {
+          const raw = e instanceof Error ? e.message : "";
+          const missingRpc =
+            raw.includes("grant_portal_play") ||
+            raw.toLowerCase().includes("function") && raw.toLowerCase().includes("does not exist");
           const failed: PortalSettleResult = {
             ok: false,
             portalId,
             minutesGranted: 0,
             coinsGranted: 0,
             minutesRemainingToday: 0,
-            message:
-              "Arcade portal rewards need a database update. Coins were not added.",
+            message: missingRpc
+              ? "Arcade portal rewards are not enabled on the server yet. Run Supabase migration 20260322000007_portal_play_rewards.sql, then try again."
+              : raw.trim() ||
+                "Could not save arcade earnings. Check your connection and try again.",
           };
           setLastEarnNotice(failed.message);
           return failed;

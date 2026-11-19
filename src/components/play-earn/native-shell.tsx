@@ -10,6 +10,26 @@ export function NativeShell() {
   }, []);
 
   useEffect(() => {
+    let remove: (() => void) | undefined;
+    void (async () => {
+      try {
+        const { Capacitor } = await import("@capacitor/core");
+        if (!Capacitor.isNativePlatform()) return;
+        const { App } = await import("@capacitor/app");
+        const handle = await App.addListener("resume", () => {
+          void preloadRewardedAds();
+        });
+        remove = () => {
+          void handle.remove();
+        };
+      } catch {
+        // Web dev — Capacitor plugins not loaded
+      }
+    })();
+    return () => remove?.();
+  }, []);
+
+  useEffect(() => {
     void (async () => {
       try {
         const { Capacitor } = await import("@capacitor/core");

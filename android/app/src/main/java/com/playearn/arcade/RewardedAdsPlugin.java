@@ -149,9 +149,28 @@ public class RewardedAdsPlugin extends Plugin {
 
     @PluginMethod
     public void preloadAds(PluginCall call) {
+        Runnable startLoads =
+            () -> {
+                rewardedLoadAttempts = 0;
+                ensureAdsLoading();
+                call.resolve();
+            };
         if (unityInitialized) {
-            rewardedLoadAttempts = 0;
-            ensureAdsLoading();
+            startLoads.run();
+            return;
+        }
+        if (unityInitInProgress) {
+            mainHandler.postDelayed(
+                () -> {
+                    if (unityInitialized) {
+                        startLoads.run();
+                    } else {
+                        call.resolve();
+                    }
+                },
+                400
+            );
+            return;
         }
         call.resolve();
     }
@@ -287,6 +306,9 @@ public class RewardedAdsPlugin extends Plugin {
             call.resolve(ret);
             return;
         }
+
+        rewardedLoadAttempts = 0;
+        ensureAdsLoading();
 
         waitForReady(
             () -> rewardedAd != null,

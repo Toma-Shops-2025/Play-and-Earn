@@ -117,6 +117,7 @@ export async function cloudGrantPortalPlay(
     coinsGranted?: number;
     minutesGranted?: number;
     minutesRemainingToday?: number;
+    balance?: number;
   };
   return {
     ok: Boolean(result.ok),
@@ -125,6 +126,10 @@ export async function cloudGrantPortalPlay(
     coinsGranted: Number(result.coinsGranted ?? 0),
     minutesRemainingToday: Number(result.minutesRemainingToday ?? 0),
     message: result.message,
+    balance:
+      result.balance === undefined || result.balance === null
+        ? undefined
+        : Number(result.balance),
   };
 }
 

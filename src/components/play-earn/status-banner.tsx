@@ -71,7 +71,7 @@ export function StatusBanner() {
         {hasPriorCashout
           ? " Cash out any amount."
           : ` First cashout needs ${formatCash(cashoutMinimum)}; after that, any amount.`}{" "}
-        Ready balance caps at {formatCash(ECONOMY.maxCashBalanceVirtualDollars)}
+        Ready balance caps at {formatCash(ECONOMY.maxCashBalanceVirtualDollars)}{" "}
         until you cash out.
         {atCashCap ? " You’re at the cap — cash out to keep stacking." : ""}
       </p>

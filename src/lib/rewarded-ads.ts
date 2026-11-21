@@ -33,7 +33,7 @@ function friendlyAdError(message: string | undefined): string {
   if (lower.includes("bad request") || /\b400\b/.test(message)) {
     return [
       "Unity Ads rejected the request — use ad unit names (Rewarded_Android / Interstitial_Android),",
-      "Game ID 6218645 in levelplay.xml, package com.playearn.arcade in Unity Cloud, then rebuild the APK.",
+      "Game ID 6229572 in levelplay.xml, package com.playearn.arcade in Unity Cloud, then rebuild the APK.",
     ].join(" ");
   }
   return message;

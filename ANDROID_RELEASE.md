@@ -43,15 +43,17 @@ npm run android:open
 
 ## Command-line AAB (after signing config)
 
-PowerShell from the repo root:
+From the repo root, after `android/keystore.properties` exists:
 
-```powershell
-.\build-apk.ps1 -Bundle
+```bash
+npm run build:aab
 ```
+
+Windows PowerShell equivalent: `.\build-apk.ps1 -Bundle`
 
 Output: `android/app/build/outputs/bundle/release/app-release.aab`
 
-Upload that file to Play Console **Internal testing** first, then closed testing.
+Upload that file to Play Console **Testing → Internal testing** first. When the pre-launch report looks fine, open that release and **Promote release → Closed testing**. The same signed bundle and version code serve both tracks; do not rebuild a second bundle unless you bump `versionCode`.
 
 ## Versioning
 

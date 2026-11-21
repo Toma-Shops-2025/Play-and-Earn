@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useAuth } from "@/context/auth-provider";
 
 export function AuthPanel() {
@@ -170,12 +171,11 @@ export function AuthPanel() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <input
-            type="password"
+          <PasswordInput
             autoComplete={mode === "signIn" ? "current-password" : "new-password"}
             placeholder="Password (min 6 characters)"
-            className="h-11 w-full rounded-xl border border-white/20 bg-black/30 px-3 text-sm text-white placeholder:text-white/40"
             value={password}
+            disabled={busy}
             onChange={(e) => setPassword(e.target.value)}
           />
           <Button

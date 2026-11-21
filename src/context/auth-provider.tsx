@@ -12,7 +12,10 @@ import {
 import type { Session, User } from "@supabase/supabase-js";
 import { getSupabase } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { SITE_URL } from "@/lib/site-url";
+import {
+  getOAuthRedirectTo,
+  isNativeOAuthCallback,
+} from "@/lib/oauth-redirect";
 
 type AuthContextValue = {
   enabled: boolean;
@@ -26,11 +29,6 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function oauthRedirectTo(): string {
-  if (typeof window === "undefined") return `${SITE_URL}/`;
-  return `${window.location.origin}${window.location.pathname}`;
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const enabled = isSupabaseConfigured();
@@ -58,6 +56,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.subscription.unsubscribe();
   }, [enabled]);
 
+  useEffect(() => {
+    if (!enabled) return;
+
+    let removeListener: (() => void) | undefined;
+
+    async function finishNativeOAuth(url: string) {
+      if (!isNativeOAuthCallback(url)) return;
+      const supabase = getSupabase();
+      if (!supabase) return;
+      try {
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.close();
+      } catch {
+        // Browser may already be closed
+      }
+      await supabase.auth.exchangeCodeForSession(url);
+    }
+
+    void (async () => {
+      try {
+        const { Capacitor } = await import("@capacitor/core");
+        if (!Capacitor.isNativePlatform()) return;
+
+        const { App } = await import("@capacitor/app");
+        const launch = await App.getLaunchUrl();
+        if (launch?.url) {
+          await finishNativeOAuth(launch.url);
+        }
+
+        const handle = await App.addListener("appUrlOpen", (event) => {
+          void finishNativeOAuth(event.url);
+        });
+        removeListener = () => {
+          void handle.remove();
+        };
+      } catch {
+        // Web dev without Capacitor
+      }
+    })();
+
+    return () => removeListener?.();
+  }, [enabled]);
+
   const signUp = useCallback(async (email: string, password: string) => {
     const supabase = getSupabase();
     if (!supabase) return "Backend auth is not configured.";
@@ -75,16 +116,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = useCallback(async () => {
     const supabase = getSupabase();
     if (!supabase) return "Backend auth is not configured.";
-    const { error } = await supabase.auth.signInWithOAuth({
+
+    let isNative = false;
+    try {
+      const { Capacitor } = await import("@capacitor/core");
+      isNative = Capacitor.isNativePlatform();
+    } catch {
+      isNative = false;
+    }
+
+    const redirectTo = getOAuthRedirectTo(isNative);
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: oauthRedirectTo(),
+        redirectTo,
+        skipBrowserRedirect: isNative,
         queryParams: {
           prompt: "select_account",
         },
       },
     });
-    return error?.message ?? null;
+    if (error) return error.message;
+
+    if (isNative) {
+      if (!data.url) {
+        return "Could not start Google sign-in. Try again.";
+      }
+      try {
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.open({ url: data.url });
+      } catch (e) {
+        return e instanceof Error ? e.message : "Could not open sign-in browser.";
+      }
+    }
+
+    return null;
   }, []);
 
   const signOut = useCallback(async () => {

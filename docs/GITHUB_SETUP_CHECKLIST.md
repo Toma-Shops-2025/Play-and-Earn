@@ -95,6 +95,13 @@ Or run **`supabase/ALL_MIGRATIONS_IN_ORDER.sql` once** on an empty database (not
 2. Turn **Enable Email provider** ON.
 3. Save (disable “Confirm email” for faster testing if you want).
 
+### B3b. Google sign-in + redirect URLs (web + Android)
+1. **Authentication** → **Providers** → **Google** → enable and paste Google OAuth client ID/secret from [Google Cloud Console](https://console.cloud.google.com/).
+2. **Authentication** → **URL Configuration** → **Redirect URLs** — add all of:
+   - `https://toma-shops-2025.github.io/Play-and-Earn/**`
+   - `http://localhost:43123/**`
+   - `com.playearn.arcade://**` (required so the Play Store APK returns here after Google, not to Chrome on GitHub Pages)
+
 ### B4. Supabase Edge Function secrets
 1. Install Supabase CLI on your PC (optional) **or** use Dashboard → **Edge Functions** → secrets UI if available.
 2. With CLI:

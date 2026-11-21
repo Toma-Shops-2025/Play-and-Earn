@@ -41,17 +41,18 @@ npm run android:open
 - Run on an emulator or device to QA onboarding, games, and **Profile → Delete all data**.
 - **Build → Generate Signed Bundle / APK → Android App Bundle** for Play upload.
 
-## Command-line AAB (after signing config)
+## Command-line AAB
 
-From the repo root, after `android/keystore.properties` exists:
+From PowerShell, same as the other apps. The upload key is `C:\Keys\play-and-earn.jks` (alias `alias`). Create that keystore once if it is not there yet; the script prints the `keytool` command.
 
-```bash
-npm run build:aab
+```powershell
+cd $env:USERPROFILE\Desktop\Play-and-Earn
+.\build-aab.ps1
 ```
 
-Windows PowerShell equivalent: `.\build-apk.ps1 -Bundle`
+The script bumps `versionCode`, builds the web app, syncs Capacitor, and signs the bundle.
 
-Output: `android/app/build/outputs/bundle/release/app-release.aab`
+Output: `android\app\build\outputs\bundle\release\app-release.aab`
 
 Upload that file to Play Console **Testing → Internal testing** first. When the pre-launch report looks fine, open that release and **Promote release → Closed testing**. The same signed bundle and version code serve both tracks; do not rebuild a second bundle unless you bump `versionCode`.
 

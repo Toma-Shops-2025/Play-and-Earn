@@ -8,7 +8,8 @@ Use these when filling **Play Console → App content → Data safety** for the 
 |----------|--------|
 | Does your app collect or share any of the required user data types? | **Yes** |
 | Is all of the user data collected by your app encrypted in transit? | **Yes** (HTTPS to Unity / Google ad SDKs; HTTPS to Supabase if the user signs in) |
-| Do you provide a way for users to request that their data is deleted? | **Yes** — in-app **Profile → Delete all data on device**; also uninstall / clear storage |
+| Do you provide a way for users to request that their data is deleted? | **Yes** — **Delete account URL** below; in-app **Profile → Delete all data on device** |
+| **Delete account URL** (Play Console field) | `https://toma-shops-2025.github.io/Play-and-Earn/delete-account/` |
 
 ## Data types (this Play Android build)
 

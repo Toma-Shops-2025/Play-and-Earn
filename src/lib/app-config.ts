@@ -11,6 +11,7 @@ export const APP_CONFIG = {
   termsUrl: `${SITE_URL}/terms/`,
   faqUrl: `${SITE_URL}/faq/`,
   contactUrl: `${SITE_URL}/contact/`,
+  deleteAccountUrl: `${SITE_URL}/delete-account/`,
   rulesUrl: `${SITE_URL}/rules/`,
   siteUrl: SITE_URL,
   githubRepoUrl: "https://github.com/Toma-Shops-2025/Play-and-Earn",

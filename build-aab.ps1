@@ -1,5 +1,5 @@
 ﻿# Play N' Earn - Build signed AAB for Google Play
-# Usage: cd $env:USERPROFILE\Desktop\Play-and-Earn ; .\build-aab.ps1
+# Usage: cd C:\Users\SexyMini\.app-store\play-and-earn ; .\build-aab.ps1
 
 $ProjectPath  = $PSScriptRoot
 $KeystorePath = "C:\Keys\play-and-earn.jks"

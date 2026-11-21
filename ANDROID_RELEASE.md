@@ -46,7 +46,7 @@ npm run android:open
 From PowerShell, same as the other apps. The upload key is `C:\Keys\play-and-earn.jks` (alias `alias`). Create that keystore once if it is not there yet; the script prints the `keytool` command.
 
 ```powershell
-cd $env:USERPROFILE\Desktop\Play-and-Earn
+cd C:\Users\SexyMini\.app-store\play-and-earn
 .\build-aab.ps1
 ```
 

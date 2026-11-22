@@ -16,7 +16,7 @@ export const APP_CONFIG = {
   siteUrl: SITE_URL,
   githubRepoUrl: "https://github.com/Toma-Shops-2025/Play-and-Earn",
   minAge: 18,
-  version: "1.0.1",
+  version: "1.0.2",
   /** Keep false until ad ARPU + IAP cover real payouts in your region. */
   realMoneyPayoutsEnabled: ECONOMY.realMoneyPayoutsEnabled,
   minCashoutVirtualDollars: ECONOMY.minCashoutVirtualDollars,

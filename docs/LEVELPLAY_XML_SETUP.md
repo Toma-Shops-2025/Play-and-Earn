@@ -15,7 +15,7 @@ Path: `android/app/src/main/res/values/levelplay.xml`
 ## Test ads
 
 Unity Cloud → **Settings** → enable **Test mode** (right sidebar).  
-Optional: `android/app/src/main/res/values/unity_ads_config.xml` has `unity_ads_test_mode` (default `true` for debug builds).
+`android/app/src/main/res/values/unity_ads_config.xml` has `unity_ads_test_mode`. It is `false` for the closed-testing build so testers get real ads.
 
 ## Rebuild
 

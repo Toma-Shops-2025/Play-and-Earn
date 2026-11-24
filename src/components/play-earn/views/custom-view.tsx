@@ -62,6 +62,11 @@ export function CustomView() {
             <p className="mt-0.5 text-xs text-violet-200/70">
               UID {uid} · {mode === "cloud" ? "Cloud sync on" : "On-device only"}
             </p>
+            {user ? null : (
+              <p className="mt-1 text-[11px] text-fuchsia-100/70">
+                Guest is not an account. Sign in below. Sign out appears after Google succeeds.
+              </p>
+            )}
           </div>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-2">

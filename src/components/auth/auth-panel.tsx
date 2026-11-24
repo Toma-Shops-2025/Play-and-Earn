@@ -7,8 +7,16 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { useAuth } from "@/context/auth-provider";
 
 export function AuthPanel() {
-  const { enabled, loading, user, signIn, signUp, signInWithGoogle, signOut } =
-    useAuth();
+  const {
+    enabled,
+    loading,
+    user,
+    signIn,
+    signUp,
+    signInWithGoogle,
+    signOut,
+    authNotice,
+  } = useAuth();
   const [showEmail, setShowEmail] = useState(false);
   const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
   const [email, setEmail] = useState("");
@@ -189,8 +197,8 @@ export function AuthPanel() {
         </div>
       ) : null}
 
-      {message ? (
-        <p className="mt-3 text-xs text-amber-200">{message}</p>
+      {message || authNotice ? (
+        <p className="mt-3 text-xs text-amber-200">{message || authNotice}</p>
       ) : null}
     </section>
   );

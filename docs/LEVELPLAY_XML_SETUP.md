@@ -8,7 +8,7 @@ Path: `android/app/src/main/res/values/levelplay.xml`
 
 | XML key | Unity Cloud source | Value |
 |---------|-------------------|--------|
-| `levelplay_app_key` | Settings → **Game IDs** → Google Play | `6218645` |
+| `levelplay_app_key` | Settings → **Game IDs** → Google Play | `6229572` |
 | `levelplay_rewarded_ad_unit_id` | Placements → Rewarded → **Ad unit ID** (name, e.g. `Rewarded_Android`) | `Rewarded_Android` |
 | `levelplay_interstitial_ad_unit_id` | Placements → Interstitial → **Ad unit ID** | `Interstitial_Android` |
 
